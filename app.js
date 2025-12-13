@@ -270,6 +270,8 @@ onAuthStateChanged(auth, async (user) => {
       
       // Проверяем запущен ли WebApp внутри Telegram
       if (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) {
+        console.log('Running in Telegram WebApp');
+        
         // Запущен в Telegram - отправляем данные боту
         tg.sendData(JSON.stringify({
           type: 'auth_success',
@@ -283,8 +285,20 @@ onAuthStateChanged(auth, async (user) => {
           tg.close();
         }, 500);
       } else {
-        // Запущен в браузере (не через Telegram)
-        // Показываем инструкцию
+        console.log('Running in browser, not Telegram');
+        
+        // Запущен в браузере - используем Deep Link
+        // Создаём параметр для бота
+        const authPayload = btoa(JSON.stringify({
+          uid: user.uid,
+          email: user.email,
+          token: token
+        }));
+        
+        // Ссылка на бота с параметром
+        const botUsername = 'HayatiBankBot'; // Замени на свой username бота
+        const deepLink = `https://t.me/${botUsername}?start=auth_${authPayload}`;
+        
         loader.innerHTML = `
           <div style="text-align: center; padding: 20px;">
             <div style="font-size: 48px; margin-bottom: 16px;">✅</div>
@@ -293,24 +307,17 @@ onAuthStateChanged(auth, async (user) => {
               Вы авторизованы как:<br>
               <strong style="color: var(--text);">${user.email}</strong>
             </p>
-            <p style="color: var(--text-muted); font-size: 14px;">
-              Теперь вернитесь в Telegram бота и нажмите кнопку<br>
-              <strong>"💼 Мой кабинет"</strong>
+            <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 24px;">
+              Теперь откройте бота в Telegram, нажав кнопку ниже:
             </p>
-            <button onclick="window.close()" class="btn btn-primary" style="margin-top: 24px;">
-              Закрыть окно
-            </button>
+            <a href="${deepLink}" class="btn btn-primary" style="display: inline-block; text-decoration: none;">
+              Открыть бота
+            </a>
+            <p style="color: var(--text-muted); font-size: 12px; margin-top: 16px;">
+              Или вернитесь в бота и нажмите "💼 Мой кабинет"
+            </p>
           </div>
         `;
-        
-        // Пытаемся сохранить токен в localStorage для бота
-        try {
-          localStorage.setItem('hayati_auth_token', token);
-          localStorage.setItem('hayati_auth_uid', user.uid);
-          localStorage.setItem('hayati_auth_email', user.email);
-        } catch (e) {
-          console.log('localStorage not available');
-        }
       }
     } catch (error) {
       console.error('Error getting token:', error);
