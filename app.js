@@ -69,18 +69,47 @@ const showLoginLink = document.getElementById('showLogin');
 // ============================================
 // 4. ПЕРЕКЛЮЧЕНИЕ ФОРМ
 // ============================================
+
+// Проверяем параметр mode в URL
+const urlParams = new URLSearchParams(window.location.search);
+const mode = urlParams.get('mode');
+
+log('📋 URL параметры:', { mode });
+
+// Функция переключения форм
+function showForm(formType) {
+  loginForm.classList.add('hidden');
+  registerForm.classList.add('hidden');
+  loader.classList.add('hidden');
+  clearMessages();
+  
+  if (formType === 'register') {
+    registerForm.classList.remove('hidden');
+    log('📝 Показана форма регистрации');
+  } else {
+    loginForm.classList.remove('hidden');
+    log('🔐 Показана форма входа');
+  }
+}
+
+// Показываем нужную форму при загрузке
+window.addEventListener('DOMContentLoaded', () => {
+  if (mode === 'register') {
+    showForm('register');
+  } else {
+    showForm('login');
+  }
+});
+
+// Обработчики кнопок переключения
 showRegisterLink.addEventListener('click', (e) => {
   e.preventDefault();
-  loginForm.classList.add('hidden');
-  registerForm.classList.remove('hidden');
-  clearMessages();
+  showForm('register');
 });
 
 showLoginLink.addEventListener('click', (e) => {
   e.preventDefault();
-  registerForm.classList.add('hidden');
-  loginForm.classList.remove('hidden');
-  clearMessages();
+  showForm('login');
 });
 
 // ============================================
