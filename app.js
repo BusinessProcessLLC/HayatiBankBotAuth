@@ -1,23 +1,7 @@
 // app.js
 
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-import { 
-  getAuth, 
-  signInWithEmailAndPassword, 
-  createUserWithEmailAndPassword,
-  // Временно закомментируем неиспользуемое:
-  // sendPasswordResetEmail,
-  onAuthStateChanged
-} from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
-import { 
-  getFirestore, 
-  doc, 
-  setDoc, 
-  // getDoc, // Закомментируем временно
-  // serverTimestamp // Закомментируем временно
-} from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
-// Firebase конфигурация (Используем Вашу конфигурацию)
+// 🔥 Firebase config (ЗАМЕНИ НА СВОЙ)
 const firebaseConfig = {
   apiKey: "AIzaSyB5CJlw23KPmN5HbY6S9gQKbUgb41_RxMw",
   authDomain: "tms-test-nlyynt.firebaseapp.com",
@@ -29,98 +13,52 @@ const firebaseConfig = {
   measurementId: "G-BYXEPGS2LM"
 };
 
-// Инициализация Firebase
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
 
-// ----------------------------------------------------------------------
-// НОВАЯ КЛЮЧЕВАЯ ЛОГИКА MVP: Передача UID в Telegram
-// ----------------------------------------------------------------------
+const tg = window.Telegram.WebApp;
+tg.expand();
 
-/**
- * Ключевая функция: Отправляет UID обратно в Telegram-бота и закрывает WebApp.
- * @param {string} uid - Firebase User ID
- */
-function redirectToTelegramWithUid(uid) {
-    const statusElement = document.getElementById('status-message');
-    
-    // Проверяем, открыт ли WebApp из Telegram (нужно подключить telegram-web-app.js)
-    if (window.Telegram && window.Telegram.WebApp) {
-        statusElement.textContent = 'Авторизация успешна. Отправка данных боту...';
-        
-        // 1. Отправляем UID боту в виде JSON-строки
-        window.Telegram.WebApp.sendData(JSON.stringify({ 
-            event: 'auth_success',
-            uid: uid 
-        }));
-        
-        // 2. Закрываем WebApp
-        window.Telegram.WebApp.close();
-        
+let mode = 'login';
+
+const title = document.getElementById('title');
+const submit = document.getElementById('submit');
+const toggle = document.getElementById('toggle');
+
+toggle.onclick = () => {
+  mode = mode === 'login' ? 'register' : 'login';
+  title.innerText = mode === 'login' ? 'Вход' : 'Регистрация';
+  submit.innerText = mode === 'login' ? 'Войти' : 'Зарегистрироваться';
+  toggle.innerText =
+    mode === 'login'
+      ? 'Нет аккаунта? Зарегистрироваться'
+      : 'Уже есть аккаунт? Войти';
+};
+
+submit.onclick = async () => {
+  const email = document.getElementById('email').value;
+  const password = document.getElementById('password').value;
+
+  try {
+    let userCredential;
+
+    if (mode === 'login') {
+      userCredential = await auth.signInWithEmailAndPassword(email, password);
     } else {
-        // Если открыто в браузере
-        statusElement.textContent = `Авторизация успешна. Ваш UID: ${uid}. Теперь вернитесь в Telegram.`;
-        console.log("Успешная авторизация. UID:", uid);
+      userCredential = await auth.createUserWithEmailAndPassword(email, password);
     }
-}
 
+    const user = userCredential.user;
 
-/**
- * Обработчик регистрации
- */
-window.handleRegistration = async (email, password) => {
-    try {
-        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        const user = userCredential.user;
-        
-        // MVP СЦЕНАРИЙ: После регистрации сразу передаем UID в Telegram
-        redirectToTelegramWithUid(user.uid);
-        
-    } catch (error) {
-        // Улучшенная обработка ошибок
-        const errorMessage = error.message.replace(/Firebase: /, '');
-        document.getElementById('status-message').textContent = `Ошибка регистрации: ${errorMessage}`;
-        console.error("Ошибка регистрации:", error.code, error.message);
-    }
+    tg.sendData(JSON.stringify({
+      type: 'auth_success',
+      uid: user.uid,
+      email: user.email
+    }));
+
+    tg.close();
+
+  } catch (err) {
+    alert(err.message);
+  }
 };
-
-/**
- * Обработчик входа
- */
-window.handleLogin = async (email, password) => {
-    try {
-        const userCredential = await signInWithEmailAndPassword(auth, email, password);
-        const user = userCredential.user;
-        
-        // MVP СЦЕНАРИЙ: После входа сразу передаем UID в Telegram
-        redirectToTelegramWithUid(user.uid);
-        
-    } catch (error) {
-        const errorMessage = error.message.replace(/Firebase: /, '');
-        document.getElementById('status-message').textContent = `Ошибка входа: ${errorMessage}`;
-        console.error("Ошибка входа:", error.code, error.message);
-    }
-};
-
-// ----------------------------------------------------------------------
-// ВРЕМЕННО КОММЕНТИРУЕМ СТАРУЮ ЛОГИКУ, которая не нужна для MVP
-// ----------------------------------------------------------------------
-
-/*
-// /**
-//  * Форматировать инвестиции
-//  * /
-// const formatInvestments = (investments) => {
-//    // ...
-// }
-
-// /**
-//  * Форматировать общую сводку (dashboard)
-//  * /
-// const formatDashboard = (stats) => {
-//    // ...
-// }
-*/
-
-// // Убедитесь, что handleRegistration и handleLogin привязаны к вашей форме в index.html.
