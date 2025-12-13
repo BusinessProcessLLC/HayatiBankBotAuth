@@ -1,100 +1,35 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>🏦 ФД «Хаяти» — Вход</title>
-  <link rel="stylesheet" href="style.css">
-</head>
+    <meta charset="UTF-8">
+    <title>Авторизация / Регистрация</title>
+    
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    
+    <script type="module" src="./app.js"></script>
+    
+    </head>
 <body>
-  <div class="container">
-    <!-- Логотип -->
-    <div class="logo">
-      <h1>🏦 ФД «Хаяти»</h1>
-      <p class="subtitle">Управление капиталом</p>
+    <h1>Вход / Регистрация (MVP)</h1>
+    
+    <div id="auth-form-container">
+        <form id="login-form" onsubmit="event.preventDefault(); window.handleLogin(document.getElementById('login-email').value, document.getElementById('login-password').value);">
+            <h2>Вход</h2>
+            <input type="email" id="login-email" placeholder="Email" required><br>
+            <input type="password" id="login-password" placeholder="Пароль" required><br>
+            <button type="submit">Войти</button>
+        </form>
+
+        <hr>
+
+        <form id="registration-form" onsubmit="event.preventDefault(); window.handleRegistration(document.getElementById('reg-email').value, document.getElementById('reg-password').value);">
+            <h2>Регистрация</h2>
+            <input type="email" id="reg-email" placeholder="Email" required><br>
+            <input type="password" id="reg-password" placeholder="Пароль" required><br>
+            <button type="submit">Зарегистрироваться</button>
+        </form>
     </div>
 
-    <!-- Форма входа -->
-    <div id="loginForm" class="form-card">
-      <h2>Вход в систему</h2>
-      
-      <div class="input-group">
-        <label for="loginEmail">Email</label>
-        <input type="email" id="loginEmail" placeholder="your@email.com" autocomplete="email">
-      </div>
-
-      <div class="input-group">
-        <label for="loginPassword">Пароль</label>
-        <input type="password" id="loginPassword" placeholder="••••••••" autocomplete="current-password">
-      </div>
-
-      <button id="loginBtn" class="btn btn-primary">Войти</button>
-      
-      <div class="links">
-        <a href="#" id="forgotPasswordLink">Забыли пароль?</a>
-        <a href="#" id="showRegisterLink">Регистрация</a>
-      </div>
-
-      <div id="loginError" class="error hidden"></div>
-    </div>
-
-    <!-- Форма регистрации -->
-    <div id="registerForm" class="form-card hidden">
-      <h2>Регистрация</h2>
-      
-      <div class="input-group">
-        <label for="registerEmail">Email</label>
-        <input type="email" id="registerEmail" placeholder="your@email.com" autocomplete="email">
-      </div>
-
-      <div class="input-group">
-        <label for="registerPassword">Пароль</label>
-        <input type="password" id="registerPassword" placeholder="Минимум 6 символов" autocomplete="new-password">
-      </div>
-
-      <div class="input-group">
-        <label for="registerPasswordConfirm">Подтвердите пароль</label>
-        <input type="password" id="registerPasswordConfirm" placeholder="••••••••" autocomplete="new-password">
-      </div>
-
-      <button id="registerBtn" class="btn btn-primary">Создать аккаунт</button>
-      
-      <div class="links">
-        <a href="#" id="showLoginLink">Уже есть аккаунт? Войти</a>
-      </div>
-
-      <div id="registerError" class="error hidden"></div>
-    </div>
-
-    <!-- Форма сброса пароля -->
-    <div id="resetForm" class="form-card hidden">
-      <h2>Сброс пароля</h2>
-      
-      <p class="info-text">Введите ваш email, и мы отправим ссылку для сброса пароля</p>
-      
-      <div class="input-group">
-        <label for="resetEmail">Email</label>
-        <input type="email" id="resetEmail" placeholder="your@email.com" autocomplete="email">
-      </div>
-
-      <button id="resetBtn" class="btn btn-primary">Отправить ссылку</button>
-      
-      <div class="links">
-        <a href="#" id="backToLoginLink">Назад к входу</a>
-      </div>
-
-      <div id="resetError" class="error hidden"></div>
-      <div id="resetSuccess" class="success hidden"></div>
-    </div>
-
-    <!-- Индикатор загрузки -->
-    <div id="loader" class="loader hidden">
-      <div class="spinner"></div>
-      <p>Загрузка...</p>
-    </div>
-  </div>
-
-  <!-- Firebase SDK -->
-  <script type="module" src="app.js"></script>
+    <p id="status-message" style="color: blue; margin-top: 15px;"></p>
 </body>
 </html>
