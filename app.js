@@ -262,7 +262,7 @@ onAuthStateChanged(auth, async (user) => {
         // Вариант 2: Запущено в браузере (deep link)
         log('🌐 Режим браузера, создание deep link...');
         
-        const botUsername = 'HayatiBankBot';
+        const botUsername = 'HayatiHodlBot'; // ← ТВОЙ ТЕСТОВЫЙ БОТ
         const payloadB64 = btoa(JSON.stringify(payload));
         const deepLink = `https://t.me/${botUsername}?start=auth_${payloadB64}`;
         
