@@ -252,11 +252,26 @@ onAuthStateChanged(auth, async (user) => {
         
         log('✅ Данные отправлены в бота');
         
-        // Закрываем через 1 секунду
-        setTimeout(() => {
-          log('🔒 Закрытие WebApp...');
-          tg.close();
-        }, 1000);
+        // ✅ ПОКАЗЫВАЕМ УСПЕХ, НО НЕ ЗАКРЫВАЕМ
+        // Пользователь сам закроет через крестик ❌
+        loader.innerHTML = `
+          <div style="text-align: center; padding: 40px;">
+            <div style="font-size: 64px; margin-bottom: 24px;">✅</div>
+            <h2 style="color: var(--success); margin-bottom: 16px;">Готово!</h2>
+            <p style="color: var(--text-muted); margin-bottom: 8px;">
+              Вы успешно авторизованы как:
+            </p>
+            <p style="color: var(--text); font-weight: 600; margin-bottom: 24px;">
+              ${user.email}
+            </p>
+            <p style="color: var(--text-muted); font-size: 14px;">
+              Нажмите ❌ в левом верхнем углу<br>
+              чтобы вернуться в бота
+            </p>
+          </div>
+        `;
+        
+        log('💡 Пользователь может закрыть WebApp сам');
         
       } else {
         // Вариант 2: Запущено в браузере (deep link)
