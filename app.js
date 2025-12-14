@@ -1,13 +1,12 @@
-// webapp/app.js v1.1
-// Mini App logic with 3-step authentication
+// webapp/app.js v1.2
+// Updated to save full Telegram metadata when linking
 
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
 import { 
   getAuth, 
   signInWithEmailAndPassword, 
   createUserWithEmailAndPassword,
-  sendPasswordResetEmail,
-  signInWithCustomToken
+  sendPasswordResetEmail
 } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
 import { 
   getFirestore, 
@@ -39,11 +38,11 @@ if (tg) {
   tg.ready();
   tg.expand();
   console.log('✅ Telegram WebApp initialized');
+  console.log('📱 Telegram User:', tg.initDataUnsafe?.user);
 }
 
-// API URL (change this to your ngrok URL during development)
-// const API_URL = 'http://localhost:3000'; // TODO: Change to ngrok URL
-const API_URL = 'https://c4c6f193f4c5.ngrok-free.app'
+// API URL
+const API_URL = 'https://c4c6f193f4c5.ngrok-free.app'; // Update this to your ngrok URL
 
 // DOM Elements
 const loadingScreen = document.getElementById('loadingScreen');
@@ -263,6 +262,12 @@ async function linkTelegramAccount(uid, authToken) {
       return false;
     }
     
+    console.log('🔗 Linking Telegram account:', {
+      chatId,
+      username: telegramUser?.username,
+      firstName: telegramUser?.first_name
+    });
+    
     const response = await fetch(`${API_URL}/api/link-telegram`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -281,6 +286,7 @@ async function linkTelegramAccount(uid, authToken) {
     }
     
     const result = await response.json();
+    console.log('✅ Telegram linked successfully');
     return result.success === true;
   } catch (err) {
     console.error('❌ Error linking Telegram:', err);
@@ -413,19 +419,67 @@ document.getElementById('registerBtn')?.addEventListener('click', async () => {
     const user = userCredential.user;
     const token = await user.getIdToken();
     
-    // Create user document in Firestore
+    // Get Telegram data if available
+    const tgUser = tg?.initDataUnsafe?.user;
+    const tgChatId = tgUser?.id;
+    
+    // Create user document in Firestore with full structure
     await setDoc(doc(db, 'users', user.uid), {
+      // SSOT: Firebase Auth UID
       uid: user.uid,
       email: user.email,
+      
+      // Timestamps
       createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+      
+      // Status
       status: 'active',
-      telegramAccounts: []
+      createdBy: tgChatId ? 'telegram-mini-app' : 'web',
+      
+      // Profile
+      profile: {
+        createdAt: serverTimestamp(),
+        userType: tgChatId ? 'telegram' : 'web',
+        riskLevel: 'unknown',
+        segment: 'registered' // lead → registered → active
+      },
+      
+      // Contacts
+      contacts: {
+        email: user.email,
+        phone: null,
+        telegram: tgUser?.username ? `https://t.me/${tgUser.username}` : null
+      },
+      
+      // Telegram metadata (if registered from Telegram)
+      ...(tgUser && {
+        tgId: tgUser.id,
+        tgUsername: tgUser.username || null,
+        tgLanguage: tgUser.language_code || null,
+        tgIsPremium: tgUser.is_premium || false,
+        nameFirst: tgUser.first_name || null,
+        nameLast: tgUser.last_name || null,
+        nameFull: `${tgUser.first_name || ''}${tgUser.last_name ? ' ' + tgUser.last_name : ''}`.trim() || null
+      }),
+      
+      // Arrays
+      telegramAccounts: [],
+      userAccessIDs: tgChatId ? [String(tgChatId), tgChatId] : [],
+      userActionCasesPermitted: [
+        'balanceShow',
+        'paymentsShow',
+        'expenseItemsShowAll'
+      ]
     });
     
+    console.log('✅ User document created in Firestore');
     console.log('✅ Registration successful:', user.email);
     
     // Link Telegram if opened from Telegram
-    await linkTelegramAccount(user.uid, token);
+    if (tgChatId) {
+      await linkTelegramAccount(user.uid, token);
+    }
     
     // Save session
     saveSession({
