@@ -426,15 +426,158 @@ document.getElementById('loginBtn')?.addEventListener('click', async () => {
   }
 });
 
-// REGISTER (abbreviated - same pattern as login)
+// REGISTER
 document.getElementById('registerBtn')?.addEventListener('click', async () => {
-  // ... similar implementation ...
-  // (код регистрации остаётся таким же)
+  const email = document.getElementById('registerEmail')?.value.trim();
+  const password = document.getElementById('registerPassword')?.value;
+  const passwordConfirm = document.getElementById('registerPasswordConfirm')?.value;
+  
+  clearErrors();
+  
+  if (!email || !password || !passwordConfirm) {
+    showError('registerError', 'Заполните все поля');
+    return;
+  }
+  
+  if (password.length < 6) {
+    showError('registerError', 'Пароль должен быть минимум 6 символов');
+    return;
+  }
+  
+  if (password !== passwordConfirm) {
+    showError('registerError', 'Пароли не совпадают');
+    return;
+  }
+  
+  try {
+    document.getElementById('registerBtn').disabled = true;
+    showLoadingScreen('Регистрация...');
+    
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    const user = userCredential.user;
+    const token = await user.getIdToken();
+    
+    // Get Telegram data if available
+    const tgUser = tg?.initDataUnsafe?.user;
+    const tgChatId = tgUser?.id;
+    
+    // Create user document in Firestore with full structure
+    await setDoc(doc(db, 'users', user.uid), {
+      // SSOT: Firebase Auth UID
+      uid: user.uid,
+      email: user.email,
+      
+      // Timestamps
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+      
+      // Status
+      status: 'active',
+      createdBy: tgChatId ? 'telegram-mini-app' : 'web',
+      
+      // Profile
+      profile: {
+        createdAt: serverTimestamp(),
+        userType: tgChatId ? 'telegram' : 'web',
+        riskLevel: 'unknown',
+        segment: 'registered'
+      },
+      
+      // Contacts
+      contacts: {
+        email: user.email,
+        phone: null,
+        telegram: tgUser?.username ? `https://t.me/${tgUser.username}` : null
+      },
+      
+      // Telegram metadata (if registered from Telegram)
+      ...(tgUser && {
+        tgId: tgUser.id,
+        tgUsername: tgUser.username || null,
+        tgLanguage: tgUser.language_code || null,
+        tgIsPremium: tgUser.is_premium || false,
+        nameFirst: tgUser.first_name || null,
+        nameLast: tgUser.last_name || null,
+        nameFull: `${tgUser.first_name || ''}${tgUser.last_name ? ' ' + tgUser.last_name : ''}`.trim() || null
+      }),
+      
+      // Arrays
+      telegramAccounts: [],
+      userAccessIDs: tgChatId ? [String(tgChatId), tgChatId] : [],
+      userActionCasesPermitted: [
+        'balanceShow',
+        'paymentsShow',
+        'expenseItemsShowAll'
+      ]
+    });
+    
+    console.log('✅ User document created in Firestore');
+    console.log('✅ Registration successful:', user.email);
+    
+    // Link Telegram if opened from Telegram
+    if (tgChatId) {
+      await linkTelegramAccount(user.uid, token);
+    }
+    
+    // Save session
+    saveSession({
+      authToken: token,
+      tokenExpiry: Date.now() + (30 * 24 * 60 * 60 * 1000),
+      uid: user.uid,
+      email: user.email
+    });
+    
+    // Show cabinet
+    showCabinet({ uid: user.uid, email: user.email });
+    
+  } catch (error) {
+    document.getElementById('registerBtn').disabled = false;
+    
+    let errorMessage = 'Ошибка регистрации';
+    if (error.code === 'auth/email-already-in-use') {
+      errorMessage = 'Этот email уже зарегистрирован';
+    } else if (error.code === 'auth/invalid-email') {
+      errorMessage = 'Неверный формат email';
+    } else if (error.code === 'auth/weak-password') {
+      errorMessage = 'Слишком простой пароль';
+    }
+    
+    showAuthScreen('register');
+    showError('registerError', errorMessage);
+  }
 });
 
 // RESET PASSWORD
 document.getElementById('resetBtn')?.addEventListener('click', async () => {
-  // ... similar implementation ...
+  const email = document.getElementById('resetEmail')?.value.trim();
+  
+  clearErrors();
+  
+  if (!email) {
+    showError('resetError', 'Введите email');
+    return;
+  }
+  
+  try {
+    document.getElementById('resetBtn').disabled = true;
+    await sendPasswordResetEmail(auth, email);
+    
+    showSuccess('resetSuccess', 'Ссылка для сброса пароля отправлена на ваш email');
+    document.getElementById('resetEmail').value = '';
+    
+    setTimeout(() => showAuthScreen('login'), 3000);
+  } catch (error) {
+    document.getElementById('resetBtn').disabled = false;
+    
+    let errorMessage = 'Ошибка отправки';
+    if (error.code === 'auth/user-not-found') {
+      errorMessage = 'Пользователь с таким email не найден';
+    } else if (error.code === 'auth/invalid-email') {
+      errorMessage = 'Неверный формат email';
+    }
+    
+    showError('resetError', errorMessage);
+  }
 });
 
 // Form switching
