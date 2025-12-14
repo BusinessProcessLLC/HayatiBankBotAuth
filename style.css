@@ -1,4 +1,5 @@
-/* style.css */
+/* webapp/style.css v1.1 */
+/* Updated with multi-screen and cabinet styles */
 
 * {
   margin: 0;
@@ -35,6 +36,23 @@ body {
   animation: fadeIn 0.3s ease-in;
 }
 
+/* ===============================
+   SCREEN MANAGEMENT
+   =============================== */
+
+.screen {
+  display: block;
+  animation: slideUp 0.3s ease-out;
+}
+
+.screen.hidden {
+  display: none !important;
+}
+
+/* ===============================
+   LOGO
+   =============================== */
+
 .logo {
   text-align: center;
   margin-bottom: 32px;
@@ -54,6 +72,10 @@ body {
   color: var(--text-muted);
   font-size: 14px;
 }
+
+/* ===============================
+   FORM CARD (Auth screens)
+   =============================== */
 
 .form-card {
   background: var(--card-bg);
@@ -185,12 +207,13 @@ body {
   display: none !important;
 }
 
+/* ===============================
+   LOADING SCREEN
+   =============================== */
+
 .loader {
   text-align: center;
-  padding: 40px;
-  background: var(--card-bg);
-  border-radius: 16px;
-  border: 1px solid var(--border);
+  padding: 40px 20px;
 }
 
 .spinner {
@@ -202,6 +225,76 @@ body {
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
+
+.loader p {
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+/* ===============================
+   CABINET SCREEN
+   =============================== */
+
+.cabinet-header {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 20px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+}
+
+.cabinet-header h1 {
+  font-size: 24px;
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.user-info {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 16px;
+}
+
+.user-label {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+.user-email {
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.cabinet-content {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+}
+
+.info-message {
+  text-align: center;
+  padding: 20px;
+}
+
+.info-message p {
+  margin-bottom: 12px;
+  font-size: 16px;
+}
+
+.info-message .info-text {
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+/* ===============================
+   ANIMATIONS
+   =============================== */
 
 @keyframes spin {
   to { transform: rotate(360deg); }
@@ -223,8 +316,12 @@ body {
   }
 }
 
+/* ===============================
+   RESPONSIVE
+   =============================== */
+
 @media (max-width: 480px) {
-  .form-card {
+  .form-card, .cabinet-header, .cabinet-content {
     padding: 24px;
   }
   
