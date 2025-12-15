@@ -1,5 +1,5 @@
 // webapp/js/api.js
-// All API calls to backend
+// All backend API calls
 
 import { API_URL } from './config.js';
 
@@ -8,6 +8,8 @@ import { API_URL } from './config.js';
  */
 export async function checkTelegramBinding(chatId, initData) {
   try {
+    console.log('🔍 Checking Telegram binding...');
+    
     const response = await fetch(`${API_URL}/api/check-telegram-binding`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -33,6 +35,8 @@ export async function checkTelegramBinding(chatId, initData) {
  */
 export async function silentLogin(uid, chatId, initData) {
   try {
+    console.log('🔐 Attempting silent login...');
+    
     const response = await fetch(`${API_URL}/api/silent-login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -84,7 +88,7 @@ export async function linkTelegramAccount(uid, authToken, telegramData) {
     const { chatId, initData, user } = telegramData;
     
     if (!chatId || !initData) {
-      console.warn('⚠️ No Telegram data available for linking');
+      console.warn('⚠️ No Telegram data for linking');
       return false;
     }
     
@@ -97,12 +101,12 @@ export async function linkTelegramAccount(uid, authToken, telegramData) {
     const response = await fetch(`${API_URL}/api/link-telegram`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ 
-        uid, 
-        chatId, 
-        initData, 
+      body: JSON.stringify({
+        uid,
+        chatId,
+        initData,
         telegramUser: user,
-        authToken 
+        authToken
       })
     });
     
@@ -111,11 +115,37 @@ export async function linkTelegramAccount(uid, authToken, telegramData) {
       return false;
     }
     
-    const result = await response.json();
     console.log('✅ Telegram linked successfully');
-    return result.success === true;
+    return true;
   } catch (err) {
     console.error('❌ Error linking Telegram:', err);
+    return false;
+  }
+}
+
+/**
+ * Delete user account (backend endpoint)
+ */
+export async function deleteUserAccount(uid, authToken) {
+  try {
+    console.log('🗑️ Deleting user account...');
+    
+    const response = await fetch(`${API_URL}/api/delete-account`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ uid, authToken })
+    });
+    
+    if (!response.ok) {
+      console.error('❌ Account deletion failed:', response.status);
+      return false;
+    }
+    
+    const result = await response.json();
+    console.log('✅ Account deleted successfully');
+    return result.success === true;
+  } catch (err) {
+    console.error('❌ Error deleting account:', err);
     return false;
   }
 }
