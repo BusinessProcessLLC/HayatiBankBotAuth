@@ -3,39 +3,31 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>🏦 ФК «Хаяти» — Вход</title>
+  <title>🦁 ФД «Хаяти» — Вход</title>
   <link rel="stylesheet" href="style.css">
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
 <body>
   <div class="container">
     
-    <!-- ===============================
-         SCREEN 1: LOADING
-         =============================== -->
+    <!-- ======================== -->
+    <!-- LOADING SCREEN -->
+    <!-- ======================== -->
     <div id="loadingScreen" class="screen">
-      <div class="logo">
-        <h1>🏦 ФК «Хаяти»</h1>
-        <p class="subtitle">Управление капиталом</p>
-      </div>
-      <div class="loader">
-        <div class="spinner"></div>
-        <p>Загрузка...</p>
-      </div>
+      <div class="spinner"></div>
+      <p>Загрузка...</p>
     </div>
 
-    <!-- ===============================
-         SCREEN 2: AUTH (Login/Register/Reset)
-         =============================== -->
+    <!-- ======================== -->
+    <!-- AUTH SCREEN -->
+    <!-- ======================== -->
     <div id="authScreen" class="screen hidden">
-      
-      <!-- Логотип -->
       <div class="logo">
-        <h1>🏦 ФК «Хаяти»</h1>
+        <h1>🦁 ФД «Хаяти»</h1>
         <p class="subtitle">Управление капиталом</p>
       </div>
 
-      <!-- Форма входа -->
+      <!-- Login Form -->
       <div id="loginForm" class="form-card">
         <h2>Вход в систему</h2>
         
@@ -59,7 +51,7 @@
         <div id="loginError" class="error hidden"></div>
       </div>
 
-      <!-- Форма регистрации -->
+      <!-- Register Form -->
       <div id="registerForm" class="form-card hidden">
         <h2>Регистрация</h2>
         
@@ -87,7 +79,7 @@
         <div id="registerError" class="error hidden"></div>
       </div>
 
-      <!-- Форма сброса пароля -->
+      <!-- Reset Password Form -->
       <div id="resetForm" class="form-card hidden">
         <h2>Сброс пароля</h2>
         
@@ -107,34 +99,38 @@
         <div id="resetError" class="error hidden"></div>
         <div id="resetSuccess" class="success hidden"></div>
       </div>
-      
     </div>
 
-    <!-- ===============================
-         SCREEN 3: CABINET
-         =============================== -->
+    <!-- ======================== -->
+    <!-- CABINET SCREEN -->
+    <!-- ======================== -->
     <div id="cabinetScreen" class="screen hidden">
-      
-      <div class="cabinet-header">
-        <h1>💼 Личный кабинет</h1>
-        <div class="user-info">
-          <p class="user-label">Email:</p>
+      <div class="cabinet-card">
+        <div class="cabinet-header">
+          <h2>💼 Личный кабинет</h2>
           <p class="user-email">loading...</p>
         </div>
-      </div>
 
-      <div class="cabinet-content">
-        <div class="info-message">
-          <p>✅ Вы успешно авторизованы</p>
-          <p class="info-text">Функционал кабинета в разработке</p>
+        <div class="cabinet-content">
+          <p>🎉 Добро пожаловать!</p>
+          <p>Здесь будет ваш кабинет с балансом, платежами и управлением капиталом.</p>
+        </div>
+
+        <div class="cabinet-actions">
+          <button onclick="logout()" class="btn btn-secondary">
+            🚪 Выйти
+          </button>
+          
+          <button onclick="deleteAccount()" class="btn btn-danger">
+            🗑️ Удалить аккаунт
+          </button>
         </div>
       </div>
-
     </div>
 
   </div>
 
-  <!-- Firebase SDK -->
+  <!-- Firebase & App -->
   <script type="module" src="app.js"></script>
 </body>
 </html>
