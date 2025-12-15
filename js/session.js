@@ -10,7 +10,7 @@ export function saveSession(sessionData) {
   try {
     localStorage.setItem(SESSION_KEY, JSON.stringify(sessionData));
     console.log('💾 Session saved to localStorage');
-    console.log('📅 Token expires:', new Date(sessionData.tokenExpiry).toLocaleString());
+    console.log('📅 Expires:', new Date(sessionData.tokenExpiry).toLocaleString());
     return true;
   } catch (err) {
     console.error('❌ Error saving session:', err);
@@ -26,22 +26,21 @@ export function getSession() {
     const sessionStr = localStorage.getItem(SESSION_KEY);
     
     if (!sessionStr) {
-      console.log('ℹ️ No session found in localStorage');
+      console.log('ℹ️ No session in localStorage');
       return null;
     }
     
     const session = JSON.parse(sessionStr);
     
-    // Check if token is expired
+    // Check if expired
     if (Date.now() >= session.tokenExpiry) {
-      console.log('⏰ Session expired, clearing');
+      console.log('⏰ Session expired');
       clearSession();
       return null;
     }
     
-    console.log('✅ Valid session found in localStorage');
+    console.log('✅ Valid session found');
     console.log('👤 User:', session.email);
-    console.log('⏳ Expires:', new Date(session.tokenExpiry).toLocaleString());
     
     return session;
   } catch (err) {
@@ -62,21 +61,5 @@ export function clearSession() {
   } catch (err) {
     console.error('❌ Error clearing session:', err);
     return false;
-  }
-}
-
-/**
- * Update session activity timestamp
- */
-export function updateSessionActivity() {
-  try {
-    const session = getSession();
-    
-    if (session) {
-      session.lastActivity = Date.now();
-      saveSession(session);
-    }
-  } catch (err) {
-    console.error('❌ Error updating activity:', err);
   }
 }
