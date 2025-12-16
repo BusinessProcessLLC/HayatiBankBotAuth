@@ -90,38 +90,24 @@ export async function deleteAccount() {
     
     const { uid, authToken } = session;
     
-    // Step 1: Delete from backend (Firestore + telegram_sessions)
-    console.log('🗑️ Step 1: Deleting from backend...');
+    // Backend deletes EVERYTHING (Firestore + telegram_sessions + Firebase Auth)
+    console.log('🗑️ Deleting account from backend...');
     const backendDeleted = await deleteUserAccount(uid, authToken);
     
     if (!backendDeleted) {
-      alert('❌ Ошибка удаления данных из Firestore');
+      alert('❌ Ошибка удаления аккаунта');
       showAuthScreen('login');
       return false;
     }
     
-    console.log('✅ Step 1 complete: Backend data deleted');
+    console.log('✅ Account deleted successfully');
     
-    // Step 2: Delete from Firebase Auth
-    console.log('🗑️ Step 2: Deleting from Firebase Auth...');
-    const auth = getAuth();
-    const currentUser = auth.currentUser;
-    
-    if (currentUser) {
-      await firebaseDeleteUser(currentUser);
-      console.log('✅ Step 2 complete: Auth user deleted');
-    } else {
-      console.warn('⚠️ No current user in Firebase Auth');
-    }
-    
-    // Step 3: Clear local session
-    console.log('🗑️ Step 3: Clearing local session...');
+    // Clear local session
+    console.log('🗑️ Clearing local session...');
     clearSession();
-    console.log('✅ Step 3 complete: Session cleared');
     
     // Success
     alert('✅ Аккаунт успешно удалён');
-    console.log('✅ Account deletion complete');
     
     // Show auth screen
     showAuthScreen('login');
@@ -132,13 +118,7 @@ export async function deleteAccount() {
     console.error('❌ Error deleting account:', err);
     
     // Show error
-    let errorMessage = 'Ошибка удаления аккаунта';
-    
-    if (err.code === 'auth/requires-recent-login') {
-      errorMessage = 'Для удаления аккаунта нужно заново войти в систему';
-    }
-    
-    alert(`❌ ${errorMessage}`);
+    alert('❌ Ошибка удаления аккаунта');
     
     // Clear session and show login
     clearSession();
