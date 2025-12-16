@@ -69,6 +69,17 @@ export function showCabinet(userData) {
   }
   
   console.log('✅ Cabinet opened for:', userData.email);
+  
+  // Load accounts (async import to avoid circular dependencies)
+  setTimeout(async () => {
+    try {
+      const { renderAccountsList, showCreateAccountButton } = await import('./cabinet/accountsUI.js');
+      showCreateAccountButton();
+      await renderAccountsList();
+    } catch (err) {
+      console.error('❌ Error loading accounts:', err);
+    }
+  }, 100);
 }
 
 /**
