@@ -1,0 +1,17 @@
+/* styles/forms.css v2.0.0 */
+.input-group input {
+  width: 100%;
+  padding: var(--space-lg) var(--space-xl);
+  background: var(--bg-deep);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  color: var(--text-primary);
+  font-size: var(--font-size-base);
+  transition: all var(--duration-base);
+}
+
+.input-group input:focus {
+  outline: none;
+  border-color: var(--neon-blue);
+  box-shadow: 0 0 0 3px rgba(0, 240, 255, 0.1), var(--glow-blue);
+}
