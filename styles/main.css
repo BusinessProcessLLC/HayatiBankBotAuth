@@ -14,31 +14,10 @@
   box-sizing: border-box;
 }
 
-:root {
-  /* Original colors */
-  --primary: #2563eb;
-  --primary-dark: #1e40af;
-  --secondary: #64748b;
-  --success: #16a34a;
-  --error: #dc2626;
-  --danger: #dc2626;
-  --bg: #0f172a;
-  --card-bg: #1e293b;
-  --text: #f1f5f9;
-  --text-muted: #94a3b8;
-  --border: #334155;
-  
-  /* Ferrari/Cyberpunk colors */
-  --ferrari-red: #dc0000;
-  --ferrari-red-dark: #a00000;
-  --ferrari-yellow: #ffd700;
-  --neon-blue: #00f0ff;
-  --neon-pink: #ff006e;
-  --neon-green: #00ff9f;
-  --metallic-silver: #c0c0d0;
-  --metallic-gold: #ffd700;
-  --glass-bg: rgba(30, 41, 59, 0.8);
-}
+
+/* Import modules */
+@import './variables.css';
+@import './animations.css';
 
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -104,9 +83,6 @@ body::before {
   box-shadow: 0 0 20px rgba(0, 240, 255, 0.5);
 }
 
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
 
 /* ======================== */
 /* AUTH SCREEN */
@@ -196,9 +172,10 @@ body::before {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  background: linear-gradient(135deg, #00b8ff 0%, var(--primary-dark) 100%);
   color: white;
-  box-shadow: 0 0 20px rgba(37, 99, 235, 0.3);
+  font-weight: 700;
+  box-shadow: 0 0 20px rgba(0, 240, 255, 0.4);
 }
 
 .btn-primary:hover {
@@ -249,9 +226,9 @@ body::before {
 /* ======================== */
 
 .ferrari-style {
-  background: linear-gradient(135deg, var(--ferrari-red) 0%, var(--ferrari-red-dark) 100%);
-  color: white;
-  font-weight: 700;
+  background: linear-gradient(135deg, var(--neon-green) 0%, #00c47a 100%);
+  color: #0f172a;
+  font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 1px;
   padding: 14px 28px;
@@ -259,9 +236,9 @@ body::before {
   position: relative;
   overflow: hidden;
   box-shadow: 
-    0 4px 15px rgba(220, 0, 0, 0.4),
-    0 0 30px rgba(255, 215, 0, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    0 4px 15px rgba(0, 255, 159, 0.4),
+    0 0 30px rgba(0, 255, 159, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -283,9 +260,9 @@ body::before {
 .ferrari-style:hover {
   transform: translateY(-2px) scale(1.02);
   box-shadow: 
-    0 6px 20px rgba(220, 0, 0, 0.6),
-    0 0 40px rgba(255, 215, 0, 0.4),
-    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    0 6px 20px rgba(0, 255, 159, 0.6),
+    0 0 40px rgba(0, 255, 159, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
 }
 
 .ferrari-style:hover::before {
@@ -312,10 +289,6 @@ body::before {
   animation: shine 3s infinite;
 }
 
-@keyframes shine {
-  0%, 100% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
-  50% { transform: translateX(100%) translateY(100%) rotate(45deg); }
-}
 
 .btn-text {
   position: relative;
@@ -1060,21 +1033,6 @@ body::before {
 /* ANIMATIONS */
 /* ======================== */
 
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
 
 /* ======================== */
 /* PROFILE MENU MODAL */
