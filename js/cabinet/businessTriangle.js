@@ -34,20 +34,32 @@ export function renderBusinessTriangle(containerId = '.cabinet-content') {
             stroke-width="2"
           />
           
-          <!-- Left edge (КОМАНДА) -->
+          <!-- Left edge (КОМАНДА) - black fill with yellow stroke -->
           <line 
             x1="250" y1="20" 
             x2="20" y2="413" 
             stroke="#ffd700" 
-            stroke-width="3"
+            stroke-width="8"
+          />
+          <line 
+            x1="250" y1="20" 
+            x2="20" y2="413" 
+            stroke="#1a1a1a" 
+            stroke-width="6"
           />
           
-          <!-- Right edge (ЛИДЕРСТВО) -->
+          <!-- Right edge (ЛИДЕРСТВО) - black fill with yellow stroke -->
           <line 
             x1="250" y1="20" 
             x2="480" y2="413" 
             stroke="#ffd700" 
-            stroke-width="3"
+            stroke-width="8"
+          />
+          <line 
+            x1="250" y1="20" 
+            x2="480" y2="413" 
+            stroke="#1a1a1a" 
+            stroke-width="6"
           />
         </svg>
         
