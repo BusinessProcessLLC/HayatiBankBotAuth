@@ -115,9 +115,9 @@ export function formatIncomeSection(incomeData) {
 }
 
 /**
- * Format expenses section with hierarchy
+ * Format expenses section with hierarchy + cash flow
  */
-export function formatExpensesSection(expensesData) {
+export function formatExpensesSection(expensesData, totalIncome = 0) {
   // Group by parent category
   const groups = {
     '0': { label: 'Предварительные', items: [], letter: 'H' },
@@ -133,6 +133,9 @@ export function formatExpensesSection(expensesData) {
       grandTotal += Number(item.amount) || 0;
     }
   });
+  
+  const cashFlow = totalIncome - grandTotal;
+  const isPositive = cashFlow >= 0;
   
   let html = `
     <div class="report-section expenses-section">
@@ -172,11 +175,19 @@ export function formatExpensesSection(expensesData) {
     `;
   });
   
-  // Grand total
+  // L. Grand total (expenses)
   html += `
     <div class="report-row grand-total-row expenses-total">
       <div class="report-cell">L. РАСХОДЫ ИТОГО</div>
       <div class="report-cell amount-cell grand-total-amount">${formatCurrency(grandTotal)}</div>
+    </div>
+  `;
+  
+  // M. Cash Flow (inside same section)
+  html += `
+    <div class="report-row grand-total-row cash-flow-row ${isPositive ? 'positive-flow' : 'negative-flow'}">
+      <div class="report-cell">M. ЧИСТЫЙ ДЕНЕЖНЫЙ ПОТОК</div>
+      <div class="report-cell amount-cell grand-total-amount">${formatCurrency(cashFlow)}</div>
     </div>
   `;
   
@@ -186,25 +197,6 @@ export function formatExpensesSection(expensesData) {
   `;
   
   return html;
-}
-
-/**
- * Format cash flow section (M. ЧИСТЫЙ ДЕНЕЖНЫЙ ПОТОК)
- */
-export function formatCashFlowSection(totalIncome, totalExpenses) {
-  const cashFlow = totalIncome - totalExpenses;
-  const isPositive = cashFlow >= 0;
-  
-  return `
-    <div class="report-section cash-flow-section">
-      <div class="report-table">
-        <div class="report-row grand-total-row cash-flow-row ${isPositive ? 'positive-flow' : 'negative-flow'}">
-          <div class="report-cell">M. ЧИСТЫЙ ДЕНЕЖНЫЙ ПОТОК</div>
-          <div class="report-cell amount-cell grand-total-amount">${formatCurrency(cashFlow)}</div>
-        </div>
-      </div>
-    </div>
-  `;
 }
 
 /**

@@ -7,7 +7,6 @@ import { getFinancialReport, calculateAnalysis } from './reportService.js';
 import { 
   formatIncomeSection, 
   formatExpensesSection,
-  formatCashFlowSection,
   formatAssetsSection,
   formatLiabilitiesSection,
   formatAnalysisSection 
@@ -49,8 +48,7 @@ export async function renderFinancialReport(accountId, year = new Date().getFull
         <!-- Report Grid -->
         <div class="report-grid">
           ${formatIncomeSection(reportData.income)}
-          ${formatExpensesSection(reportData.expenses)}
-          ${formatCashFlowSection(analysis.totalIncome, analysis.totalExpenses)}
+          ${formatExpensesSection(reportData.expenses, analysis.totalIncome)}
           ${formatAssetsSection(reportData.assets)}
           ${formatLiabilitiesSection(reportData.liabilities)}
           ${formatAnalysisSection(analysis)}

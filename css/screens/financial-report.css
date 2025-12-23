@@ -212,54 +212,33 @@
   text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
 }
 
-/* Cash Flow section - conditional coloring */
-.cash-flow-section {
-  padding: 0;
-  background: transparent;
-  border: none;
-}
-
-.cash-flow-section .report-table {
-  margin-top: -8px;
-}
-
+/* Cash Flow row (M. ЧИСТЫЙ ДЕНЕЖНЫЙ ПОТОК) - inside expenses section */
 .cash-flow-row {
   font-size: 18px;
   padding: 16px;
+  margin-top: 8px;
 }
 
 /* Positive cash flow - green */
 .cash-flow-row.positive-flow {
-  border-color: var(--neon-green);
-  background: rgba(0, 255, 159, 0.15);
+  border-color: var(--neon-green) !important;
+  background: rgba(0, 255, 159, 0.2) !important;
 }
 
 .cash-flow-row.positive-flow .grand-total-amount {
-  color: var(--neon-green);
-  text-shadow: 0 0 15px rgba(0, 255, 159, 0.6);
-  animation: pulse-green 2s ease-in-out infinite;
+  color: var(--neon-green) !important;
+  text-shadow: 0 0 15px rgba(0, 255, 159, 0.6) !important;
 }
 
 /* Negative cash flow - red */
 .cash-flow-row.negative-flow {
-  border-color: var(--error);
-  background: rgba(220, 38, 38, 0.15);
+  border-color: var(--error) !important;
+  background: rgba(220, 38, 38, 0.2) !important;
 }
 
 .cash-flow-row.negative-flow .grand-total-amount {
-  color: var(--error);
-  text-shadow: 0 0 15px rgba(220, 38, 38, 0.6);
-  animation: pulse-red 2s ease-in-out infinite;
-}
-
-@keyframes pulse-green {
-  0%, 100% { box-shadow: 0 0 15px rgba(0, 255, 159, 0.3); }
-  50% { box-shadow: 0 0 25px rgba(0, 255, 159, 0.5); }
-}
-
-@keyframes pulse-red {
-  0%, 100% { box-shadow: 0 0 15px rgba(220, 38, 38, 0.3); }
-  50% { box-shadow: 0 0 25px rgba(220, 38, 38, 0.5); }
+  color: var(--error) !important;
+  text-shadow: 0 0 15px rgba(220, 38, 38, 0.6) !important;
 }
 
 .report-cell {
