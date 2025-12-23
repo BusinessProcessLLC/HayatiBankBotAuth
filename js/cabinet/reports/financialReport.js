@@ -1,10 +1,13 @@
-/* /webapp/js/cabinet/reports/financialReport.js v1.0.0 */
-// Financial Report UI
+/* /webapp/js/cabinet/reports/financialReport.js v1.1.0 */
+// CHANGELOG v1.1.0:
+// - Added M. ЧИСТЫЙ ДЕНЕЖНЫЙ ПОТОК section
+// - Added formatCashFlowSection import
 
 import { getFinancialReport, calculateAnalysis } from './reportService.js';
 import { 
   formatIncomeSection, 
   formatExpensesSection,
+  formatCashFlowSection,
   formatAssetsSection,
   formatLiabilitiesSection,
   formatAnalysisSection 
@@ -47,6 +50,7 @@ export async function renderFinancialReport(accountId, year = new Date().getFull
         <div class="report-grid">
           ${formatIncomeSection(reportData.income)}
           ${formatExpensesSection(reportData.expenses)}
+          ${formatCashFlowSection(analysis.totalIncome, analysis.totalExpenses)}
           ${formatAssetsSection(reportData.assets)}
           ${formatLiabilitiesSection(reportData.liabilities)}
           ${formatAnalysisSection(analysis)}

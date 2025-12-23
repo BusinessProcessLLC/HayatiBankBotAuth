@@ -37,18 +37,19 @@ export function formatMonths(value) {
  */
 export function formatIncomeSection(incomeData) {
   // Group by parent category
-  const groups = {
-    'A': { label: 'Найм', items: [] },
-    'C': { label: 'Активы', items: [] },
-    'E': { label: 'Портфолио', items: [] }
-  };
+  const groups = [
+    { key: 'A', label: 'Найм', items: [] },
+    { key: 'C', label: 'Активы', items: [] },
+    { key: 'E', label: 'Портфолио', items: [] }
+  ];
   
   let grandTotal = 0;
   
   incomeData.forEach(item => {
     const groupKey = item.code.charAt(0);
-    if (groups[groupKey]) {
-      groups[groupKey].items.push(item);
+    const group = groups.find(g => g.key === groupKey);
+    if (group) {
+      group.items.push(item);
       grandTotal += Number(item.amount) || 0;
     }
   });
@@ -59,14 +60,21 @@ export function formatIncomeSection(incomeData) {
       <div class="report-table">
   `;
   
-  // Render each group
-  Object.entries(groups).forEach(([key, group]) => {
+  // Render each group with correct letters
+  const letterMapping = {
+    'A': { header: 'A', total: 'B' },
+    'C': { header: 'C', total: 'D' },
+    'E': { header: 'E', total: 'F' }
+  };
+  
+  groups.forEach(group => {
+    const letters = letterMapping[group.key];
     const groupTotal = group.items.reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
     
     // Group header
     html += `
       <div class="report-row group-header-row">
-        <div class="report-cell">${key}. ${group.label}</div>
+        <div class="report-cell">${letters.header}. ${group.label}</div>
         <div class="report-cell amount-cell"></div>
       </div>
     `;
@@ -82,10 +90,9 @@ export function formatIncomeSection(incomeData) {
     });
     
     // Group total
-    const nextLetter = String.fromCharCode(key.charCodeAt(0) + 1);
     html += `
       <div class="report-row group-total-row">
-        <div class="report-cell">${nextLetter}. ${group.label} итого</div>
+        <div class="report-cell">${letters.total}. ${group.label} итого</div>
         <div class="report-cell amount-cell group-total-amount">${formatCurrency(groupTotal)}</div>
       </div>
     `;
@@ -179,6 +186,25 @@ export function formatExpensesSection(expensesData) {
   `;
   
   return html;
+}
+
+/**
+ * Format cash flow section (M. ЧИСТЫЙ ДЕНЕЖНЫЙ ПОТОК)
+ */
+export function formatCashFlowSection(totalIncome, totalExpenses) {
+  const cashFlow = totalIncome - totalExpenses;
+  const isPositive = cashFlow >= 0;
+  
+  return `
+    <div class="report-section cash-flow-section">
+      <div class="report-table">
+        <div class="report-row grand-total-row cash-flow-row ${isPositive ? 'positive-flow' : 'negative-flow'}">
+          <div class="report-cell">M. ЧИСТЫЙ ДЕНЕЖНЫЙ ПОТОК</div>
+          <div class="report-cell amount-cell grand-total-amount">${formatCurrency(cashFlow)}</div>
+        </div>
+      </div>
+    </div>
+  `;
 }
 
 /**
