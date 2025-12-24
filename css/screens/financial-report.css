@@ -63,8 +63,66 @@
   gap: 24px;
 }
 
+/* Grid positioning for desktop alignment:
+   Income (col 1, row 1) | Expenses (col 2, row 1)
+   Assets (col 1, row 2) | Liabilities (col 2, row 2)
+   Analysis (full width, row 3) */
+
+.income-section {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.expenses-section {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.assets-section {
+  grid-column: 1;
+  grid-row: 2;
+}
+
+.liabilities-section {
+  grid-column: 2;
+  grid-row: 2;
+  
+  /* Make section a flex container to enable V/W alignment */
+  display: flex;
+  flex-direction: column;
+}
+
+/* Liabilities section inner container (the report-table) */
+.liabilities-section .report-table {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+/* Push V (first net-worth-row) down to align with R on desktop */
+.liabilities-section .net-worth-row:first-of-type {
+  margin-top: auto;
+}
+
+/* On mobile, remove auto margin to keep natural flow */
+@media (max-width: 1024px) {
+  .liabilities-section {
+    display: block; /* Reset flex */
+  }
+  
+  .liabilities-section .report-table {
+    display: flex; /* Keep table as flex for internal structure */
+    flex-direction: column;
+  }
+  
+  .liabilities-section .net-worth-row:first-of-type {
+    margin-top: 12px; /* Normal spacing on mobile */
+  }
+}
+
 .report-grid .analysis-section {
   grid-column: 1 / -1;
+  grid-row: 3;
 }
 
 /* Report Section */
