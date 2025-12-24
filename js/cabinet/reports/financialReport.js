@@ -1,4 +1,7 @@
-/* /webapp/js/cabinet/reports/financialReport.js v1.1.2 */
+/* /webapp/js/cabinet/reports/financialReport.js v1.2.0 */
+// CHANGELOG v1.2.0:
+// - Added Offering Zone integration
+// - Fetch exchange rates for unit conversion
 // CHANGELOG v1.1.2:
 // - Fixed duplicate showEditModal import
 
@@ -11,6 +14,8 @@ import {
   formatLiabilitiesSection,
   formatAnalysisSection 
 } from './reportFormatters.js';
+import { renderOfferingZone } from './offeringZone.js';
+import { API_URL } from '../../config.js';
 
 /**
  * Render financial report
@@ -68,6 +73,20 @@ export async function renderFinancialReport(accountId, year = new Date().getFull
     
     console.log('✅ Financial report rendered');
     
+    // 🆕 NEW: Render Offering Zone
+    try {
+      // Fetch exchange rates
+      const rates = await fetchExchangeRates();
+      
+      // Render offering zone
+      await renderOfferingZone(accountId, year, reportData, rates);
+      
+      console.log('✅ Offering zone rendered');
+    } catch (offerErr) {
+      console.error('❌ Error rendering offering zone:', offerErr);
+      // Don't block financial report if offerings fail
+    }
+    
   } catch (err) {
     console.error('❌ Error rendering financial report:', err);
     
@@ -82,6 +101,36 @@ export async function renderFinancialReport(accountId, year = new Date().getFull
         </div>
       `;
     }
+  }
+}
+
+/**
+ * Fetch exchange rates (RUB, USD)
+ */
+async function fetchExchangeRates() {
+  try {
+    // Use ЦБ РФ API for AED/RUB
+    const response = await fetch('https://www.cbr-xml-daily.ru/daily_json.js', {
+      timeout: 5000
+    });
+    
+    if (!response.ok) throw new Error('Failed to fetch rates');
+    
+    const data = await response.json();
+    
+    const rub = data.Valute?.AED?.Value || 25.0; // Fallback
+    const usd = 0.272; // Fixed AED/USD rate
+    
+    console.log('💱 Exchange rates:', { rub, usd });
+    
+    return { rub, usd };
+    
+  } catch (err) {
+    console.error('⚠️ Error fetching rates, using fallback:', err);
+    return {
+      rub: 25.0,
+      usd: 0.272
+    };
   }
 }
 
