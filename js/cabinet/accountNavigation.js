@@ -1,11 +1,14 @@
-/* /webapp/js/cabinet/accountNavigation.js v1.1.1 */
+/* /webapp/js/cabinet/accountNavigation.js v1.1.2 */
+// CHANGELOG v1.1.2:
+// - Fixed import path for i18n (../utils/i18n.js → ../../utils/i18n.js)
+// - Offering Zone integration confirmed
 // CHANGELOG v1.1.1:
 // - Integrated Financial Report into Step 1
 // - Replaced placeholder with real report
 
 import { getAccountById } from './accounts.js';
 import { renderBusinessTriangle } from './businessTriangle.js';
-import { renderFinancialReport } from './reports/financialReport.js'; // 🆕 NEW
+import { renderFinancialReport } from './reports/financialReport.js';
 
 /**
  * Show account dashboard with 7-step navigation
@@ -81,7 +84,7 @@ export async function showAccountDashboard(accountId) {
       </div>
     `;
     
-    // Load Step 1 (Financial Report) immediately
+    // Load Step 1 (Financial Report + Offering Zone) immediately
     await renderFinancialReport(account.accountId);
     
     // Attach navigation listeners
@@ -133,7 +136,7 @@ async function renderStepContent(stepNumber, account) {
   
   switch (stepNumber) {
     case 1:
-      // Financial Report
+      // Financial Report + Offering Zone
       await renderFinancialReport(account.accountId);
       break;
       

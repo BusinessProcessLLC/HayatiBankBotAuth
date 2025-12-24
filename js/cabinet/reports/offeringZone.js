@@ -7,7 +7,6 @@
 
 import { t } from '../../utils/i18n.js';
 import { calculateAvailableBudget, fetchAvailableUnits, filterUnitsByBudget, getTopOffers } from './offeringService.js';
-import { API_URL } from '../../config.js';
 
 /**
  * Render offering zone
