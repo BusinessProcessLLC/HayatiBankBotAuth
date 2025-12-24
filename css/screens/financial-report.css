@@ -97,11 +97,28 @@
   display: flex;
   flex-direction: column;
   flex-grow: 1;
+  gap: 0; /* Remove gap to enable margin-top: auto */
 }
 
-/* Push V (first net-worth-row) down to align with R on desktop */
+/* Add manual spacing between rows in liabilities */
+.liabilities-section .report-row {
+  margin-bottom: 2px;
+}
+
+/* Remove margin from last row */
+.liabilities-section .report-row:last-child {
+  margin-bottom: 0;
+}
+
+/* Push V down to align with R */
 .liabilities-section .net-worth-row:first-of-type {
-  margin-top: auto;
+  margin-top: auto !important; /* Override any other margins */
+  margin-bottom: 0; /* Remove spacing before W */
+}
+
+/* Keep W directly after V */
+.liabilities-section .net-worth-row:last-of-type {
+  margin-bottom: 0;
 }
 
 /* On mobile, remove auto margin to keep natural flow */
@@ -111,12 +128,17 @@
   }
   
   .liabilities-section .report-table {
-    display: flex; /* Keep table as flex for internal structure */
+    display: flex;
     flex-direction: column;
+    gap: 2px; /* Restore gap on mobile */
+  }
+  
+  .liabilities-section .report-row {
+    margin-bottom: 0; /* Remove manual margins on mobile */
   }
   
   .liabilities-section .net-worth-row:first-of-type {
-    margin-top: 12px; /* Normal spacing on mobile */
+    margin-top: 12px !important; /* Normal spacing on mobile */
   }
 }
 
