@@ -1,7 +1,24 @@
-// /webapp/js/cabinet/businessTriangle.js v1.1.0
-// CHANGELOG v1.1.0:
+// /webapp/js/cabinet/businessTriangle.js v1.1.1
+// CHANGELOG v1.1.1:
+// - FIXED: Added missing i18n import
+// - FIXED: Added fallback texts if i18n not available
 // - Added 20L system integration for "Communications" area
 // Business Management Triangle Component
+
+// Fallback localization function (if i18n not imported)
+function t(key) {
+  const fallbacks = {
+    'mission': 'МИССИЯ',
+    'team': 'КОМАНДА',
+    'leadership': 'ЛИДЕРСТВО',
+    'product': 'Продукт',
+    'legal': 'Правовое',
+    'systems': 'Системы',
+    'communications': 'Коммуникации',
+    'cashFlow': 'Ден. поток'
+  };
+  return fallbacks[key] || key;
+}
 
 /**
  * Render Business Triangle
