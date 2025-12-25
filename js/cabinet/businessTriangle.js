@@ -139,7 +139,7 @@ function renderTriangleFallback(container) {
     
 
       
-      <h2 class="triangle-title">📊 Биз. управление</h2>
+      <h2 class="triangle-title">📊 Бизнес-управление</h2>
       
       <div class="triangle-wrapper">
         <svg class="triangle-svg" viewBox="0 0 500 433" xmlns="http://www.w3.org/2000/svg">
