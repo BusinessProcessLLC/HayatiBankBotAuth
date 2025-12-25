@@ -28,7 +28,7 @@ export function calculateAvailableBudget(financialData) {
   // Formula:
   // - 3 years of positive cash flow
   // - 80% of liquid assets (keep 20% as emergency fund)
-  const budget = (cashFlow * 12 * 3) + (liquidAssets * 0.8);
+  const budget = (cashFlow * 3) + (liquidAssets * 0.8);
   
   console.log('💰 Budget calculation:', {
     totalIncome,
