@@ -1,5 +1,8 @@
-/* /webapp/investments/investments.css v1.0.1 */
-/* CHANGELOG v1.0.1:
+/* /webapp/investments/investments.css v1.0.2 */
+/* CHANGELOG v1.0.2:
+ * - FIXED: Mobile adaptation for balance cards (768px: column layout, 480px: single column)
+ * - Added word-break and white-space for long labels
+ * CHANGELOG v1.0.1:
  * - Moved to standalone investments module
  * CHANGELOG v1.0.0:
  * - Initial release
@@ -341,6 +344,32 @@
   
   .balance-grid {
     grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+  
+  .balance-card {
+    flex-direction: column;
+    text-align: center;
+    padding: 16px 12px;
+    gap: 12px;
+  }
+  
+  .balance-icon {
+    width: 44px;
+    height: 44px;
+    font-size: 28px;
+  }
+  
+  .balance-label {
+    font-size: 11px;
+    line-height: 1.2;
+    white-space: normal;
+    word-break: break-word;
+  }
+  
+  .balance-amount {
+    font-size: 16px;
+    word-break: break-all;
   }
   
   .investments-grid {
@@ -363,18 +392,30 @@
 }
 
 @media (max-width: 480px) {
+  .investment-section {
+    padding: 16px;
+  }
+  
   .balance-grid {
     grid-template-columns: 1fr;
+    gap: 12px;
   }
   
   .balance-card {
+    flex-direction: row;
+    text-align: left;
     padding: 16px;
+    gap: 12px;
   }
   
   .balance-icon {
     width: 40px;
     height: 40px;
     font-size: 24px;
+  }
+  
+  .balance-label {
+    font-size: 12px;
   }
   
   .balance-amount {
