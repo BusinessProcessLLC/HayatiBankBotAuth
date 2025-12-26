@@ -13,6 +13,8 @@ import { getBalance, getInvestments, formatCurrency, formatCrypto } from './inve
 export async function renderLevel1(accountId) {
   try {
     console.log('📊 Rendering Level 1 for account:', accountId);
+    console.log('🌍 Testing i18n:', t('investment.level1.title'));
+    console.log('🌍 Current language:', t !== undefined ? 'i18n loaded' : 'i18n NOT loaded');
     
     const container = document.getElementById('dashboardContent');
     if (!container) {
