@@ -10,7 +10,7 @@
 import { getAccountById } from './accounts.js';
 import { showBusinessManagement } from './businessTriangle.js';
 import { renderFinancialReport } from './reports/financialReport.js';
-import { renderInvestmentLevel1 } from './investments/level1.js';
+import { renderLevel1 } from './investments/level1.js';
 
 /**
  * Show account dashboard with 7-step navigation
@@ -155,7 +155,7 @@ async function renderStepContent(stepNumber, account) {
       
     case 4:
       // ✅ NEW: Investment Level 1 Dashboard
-      await renderInvestmentLevel1(account.accountId);
+      await renderLevel1(account.accountId);
       break;
       
     case 5:
@@ -178,7 +178,7 @@ async function renderStepContent(stepNumber, account) {
 
 /**
  * Render Step 4: Investments (LEGACY - kept for reference)
- * Now using renderInvestmentLevel1() from investments/level1.js
+ * Now using renderLevel1() from investments/level1.js
  */
 function renderStep4(account) {
   return `
