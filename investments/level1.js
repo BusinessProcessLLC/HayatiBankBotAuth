@@ -1,4 +1,4 @@
-/* /webapp/js/cabinet/investments/level1.js v1.0.0 */
+/* /webapp/investments/level1.js v1.0.0 */
 // CHANGELOG v1.0.0:
 // - Initial release
 // - Display balance, investments, crypto portfolio

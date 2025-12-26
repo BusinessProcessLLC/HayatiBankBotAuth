@@ -10,7 +10,7 @@
 import { getAccountById } from './accounts.js';
 import { showBusinessManagement } from './businessTriangle.js';
 import { renderFinancialReport } from './reports/financialReport.js';
-import { renderLevel1 } from './investments/level1.js';
+import { renderLevel1 } from '../../investments/level1.js';
 
 /**
  * Show account dashboard with 7-step navigation

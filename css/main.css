@@ -28,7 +28,8 @@
 @import "./screens/create-account.css";
 @import "./screens/financial-report.css";
 @import "./screens/offering-zone.css";
-@import "./screens/investments.css"; /* 🆕 NEW */
+/*  @import "./screens/investments.css"; we'll return this path when Claude's abilities increased */
+@import "../investments/investments.css"; /* 🆕 NEW */
 
 @import "./features/business-triangle.css";
 @import "./screens/20L.css";

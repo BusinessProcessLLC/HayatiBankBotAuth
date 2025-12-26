@@ -1,11 +1,11 @@
-/* /webapp/js/cabinet/investments/investmentService.js v1.0.0 */
+/* /webapp/investments/investmentService.js v1.0.0 */
 // CHANGELOG v1.0.0:
 // - Initial release
 // - Centralized Firestore access for investments
 // - Ready for future DB migration
 
-import { getSession } from '../../session.js';
-import { API_URL } from '../../config.js';
+import { getSession } from '../js/session.js';
+import { API_URL } from '../js/config.js';
 
 /**
  * Get user balance from Firestore
