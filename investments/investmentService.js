@@ -40,7 +40,7 @@ export async function getBalance(accountId) {
     const balances = result.documents || [];
     
     // Get 'default' balance or first one
-    const balance = balances.find(b => b.id === 'default') || balances[0] || null;
+    const balance = balances.find(b => b.id === 'active') || balances[0] || null;
     
     console.log('✅ Balance loaded:', balance);
     
