@@ -1,4 +1,6 @@
-/* /webapp/js/cabinet/accountNavigation.js v1.2.1 */
+/* /webapp/js/cabinet/accountNavigation.js v1.2.2 */
+// CHANGELOG v1.2.2:
+// - Fixed import path for investments module (now in /investments/)
 // CHANGELOG v1.2.1:
 // - Added Step 4 (Investments) integration with Level 1 dashboard
 // CHANGELOG v1.2.0:

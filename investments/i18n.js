@@ -1,70 +1,137 @@
-/* /webapp/investments/i18n.js v1.1.2 */
-// CHANGELOG v1.1.2:
-// - Added investment.* keys for Level 1 dashboard
-// CHANGELOG v1.1.1:
-// - ADDED: Missing 20L.stats.remaining key
-// - FIXED: 20L.dashboard.addCounterparty key
-// CHANGELOG v1.1.0:
-// - Added 20L system keys
+/* /webapp/investments/i18n.js v1.0.0 */
 // CHANGELOG v1.0.0:
-// - Initial release
-// - Support for RU/EN languages
-// - Centralized translations for entire app
+// - Standalone i18n for investments module
+// - RU/EN translations for Level 1
 
 const translations = {
   ru: {
-
-        
-    // Investment Level 1 (NEW v1.1.2)
-    'investment.level1.title': '📊 Инвестиции: Уровень №1',
-    'investment.level1.subtitle': 'Цифровые финансовые активы',
-    'investment.balance.title': '💰 Баланс активов',
-    'investment.balance.bot': 'Бот (USDT)',
-    'investment.balance.hodl': 'HODL (BTC)',
-    'investment.balance.projects': 'Проекты',
-    'investment.balance.liquidity': 'Ликвидность (RUB)',
-    'investment.balance.total': 'Итого',
-    'investment.list.title': '📋 Мои инвестиции',
-    'investment.list.empty': 'У вас пока нет активных инвестиций',
-    'investment.list.addFirst': 'Добавьте первую инвестицию для начала',
-    'investment.item.roi': 'ROI',
-    'investment.item.status': 'Статус',
-    'investment.item.date': 'Дата',
-    'investment.status.active': 'Активна',
-    'investment.status.completed': 'Завершена',
-    'investment.status.pending': 'В ожидании',
-    'investment.crypto.title': '₿ Крипто-портфель',
-    'investment.crypto.empty': 'Нет криптоактивов',
-    'investment.crypto.balance': 'Баланс',
-    'investment.loading': 'Загрузка инвестиций...',
-
+    // Level 1 Dashboard
+    'level1.title': '📊 Инвестиции: Уровень №1',
+    'level1.subtitle': 'Цифровые финансовые активы',
+    'level1.bot': 'Бот (USDT)',
+    'level1.hodl': 'HODL (BTC)',
+    'level1.projects': 'Проекты',
+    'level1.liquidity': 'Ликвидность (RUB)',
+    'level1.portfolio': 'Портфель',
+    'level1.totalInvested': 'Всего инвестировано',
+    'level1.balance': 'Баланс',
+    'level1.amount': 'Сумма',
+    'level1.date': 'Дата',
+    'level1.noBalance': 'Нет данных о балансе',
+    'level1.noInvestments': 'Нет активных инвестиций',
+    'level1.noCrypto': 'Нет криптоактивов',
+    'level1.cryptoPortfolio': '₿ Крипто-портфель',
+    'level1.cryptoNote': 'Курсы обновляются каждые 5 минут',
+    'level1.unknownInvestment': 'Неизвестная инвестиция',
+    
+    // Balance Section
+    'balance.title': '💰 Баланс активов',
+    'balance.bot': 'Бот (USDT)',
+    'balance.hodl': 'HODL (BTC)',
+    'balance.projects': 'Проекты',
+    'balance.liquidity': 'Ликвидность (RUB)',
+    'balance.total': 'Итого',
+    
+    // Investment List
+    'list.title': '📋 Мои инвестиции',
+    'list.empty': 'У вас пока нет активных инвестиций',
+    'list.addFirst': 'Добавьте первую инвестицию для начала',
+    
+    // Investment Item
+    'item.roi': 'ROI',
+    'item.status': 'Статус',
+    'item.date': 'Дата',
+    
+    // Status
+    'status.active': 'Активна',
+    'status.completed': 'Завершена',
+    'status.pending': 'В ожидании',
+    
+    // Crypto Portfolio
+    'crypto.title': '₿ Крипто-портфель',
+    'crypto.empty': 'Нет криптоактивов',
+    'crypto.balance': 'Баланс',
+    'crypto.price': 'Цена',
+    'crypto.change24h': '24ч изменение',
+    
+    // Actions
+    'actions.addInvestment': 'Добавить инвестицию',
+    'actions.viewDetails': 'Детали',
+    'actions.withdraw': 'Вывести',
+    
+    // Common
+    'common.loading': 'Загрузка...',
+    'common.error': 'Ошибка загрузки',
+    'common.retry': 'Повторить',
+    'common.back': 'Назад',
+    
+    // Errors
+    'error.loadingData': 'Ошибка загрузки данных'
   },
   
   en: {
-
-    // Investment Level 1 (NEW v1.1.2)
-    'investment.level1.title': '📊 Investments: Level #1',
-    'investment.level1.subtitle': 'Digital Financial Assets',
-    'investment.balance.title': '💰 Asset Balance',
-    'investment.balance.bot': 'Bot (USDT)',
-    'investment.balance.hodl': 'HODL (BTC)',
-    'investment.balance.projects': 'Projects',
-    'investment.balance.liquidity': 'Liquidity (RUB)',
-    'investment.balance.total': 'Total',
-    'investment.list.title': '📋 My Investments',
-    'investment.list.empty': 'You have no active investments yet',
-    'investment.list.addFirst': 'Add your first investment to get started',
-    'investment.item.roi': 'ROI',
-    'investment.item.status': 'Status',
-    'investment.item.date': 'Date',
-    'investment.status.active': 'Active',
-    'investment.status.completed': 'Completed',
-    'investment.status.pending': 'Pending',
-    'investment.crypto.title': '₿ Crypto Portfolio',
-    'investment.crypto.empty': 'No crypto assets',
-    'investment.crypto.balance': 'Balance',
-    'investment.loading': 'Loading investments...',
-
+    // Level 1 Dashboard
+    'level1.title': '📊 Investments: Level #1',
+    'level1.subtitle': 'Digital Financial Assets',
+    'level1.bot': 'Bot (USDT)',
+    'level1.hodl': 'HODL (BTC)',
+    'level1.projects': 'Projects',
+    'level1.liquidity': 'Liquidity (RUB)',
+    'level1.portfolio': 'Portfolio',
+    'level1.totalInvested': 'Total Invested',
+    'level1.balance': 'Balance',
+    'level1.amount': 'Amount',
+    'level1.date': 'Date',
+    'level1.noBalance': 'No balance data',
+    'level1.noInvestments': 'No active investments',
+    'level1.noCrypto': 'No crypto assets',
+    'level1.cryptoPortfolio': '₿ Crypto Portfolio',
+    'level1.cryptoNote': 'Rates update every 5 minutes',
+    'level1.unknownInvestment': 'Unknown investment',
+    
+    // Balance Section
+    'balance.title': '💰 Asset Balance',
+    'balance.bot': 'Bot (USDT)',
+    'balance.hodl': 'HODL (BTC)',
+    'balance.projects': 'Projects',
+    'balance.liquidity': 'Liquidity (RUB)',
+    'balance.total': 'Total',
+    
+    // Investment List
+    'list.title': '📋 My Investments',
+    'list.empty': 'You have no active investments yet',
+    'list.addFirst': 'Add your first investment to start',
+    
+    // Investment Item
+    'item.roi': 'ROI',
+    'item.status': 'Status',
+    'item.date': 'Date',
+    
+    // Status
+    'status.active': 'Active',
+    'status.completed': 'Completed',
+    'status.pending': 'Pending',
+    
+    // Crypto Portfolio
+    'crypto.title': '₿ Crypto Portfolio',
+    'crypto.empty': 'No crypto assets',
+    'crypto.balance': 'Balance',
+    'crypto.price': 'Price',
+    'crypto.change24h': '24h Change',
+    
+    // Actions
+    'actions.addInvestment': 'Add Investment',
+    'actions.viewDetails': 'Details',
+    'actions.withdraw': 'Withdraw',
+    
+    // Common
+    'common.loading': 'Loading...',
+    'common.error': 'Loading error',
+    'common.retry': 'Retry',
+    'common.back': 'Back',
+    
+    // Errors
+    'error.loadingData': 'Error loading data'
   }
 };
 
@@ -85,10 +152,10 @@ export function t(key, lang = null) {
 export function setLanguage(lang) {
   if (translations[lang]) {
     currentLanguage = lang;
-    console.log(`🌍 Language set to: ${lang}`);
+    console.log(`🌍 [Investments] Language set to: ${lang}`);
     return true;
   }
-  console.warn(`⚠️ Language not supported: ${lang}`);
+  console.warn(`⚠️ [Investments] Language not supported: ${lang}`);
   return false;
 }
 
@@ -99,13 +166,6 @@ export function getCurrentLanguage() {
   return currentLanguage;
 }
 
-/**
- * Get all supported languages
- */
-export function getSupportedLanguages() {
-  return Object.keys(translations);
-}
-
 // Auto-detect language from Telegram
 if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
   const tgLang = window.Telegram.WebApp.initDataUnsafe?.user?.language_code;
@@ -114,4 +174,4 @@ if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
   }
 }
 
-console.log('🌍 i18n initialized:', currentLanguage);
+console.log('🌍 [Investments] i18n initialized:', currentLanguage);

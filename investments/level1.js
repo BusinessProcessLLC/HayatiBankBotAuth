@@ -1,10 +1,13 @@
-/* /webapp/investments/level1.js v1.0.0 */
+/* /webapp/investments/level1.js v1.0.1 */
+// CHANGELOG v1.0.1:
+// - Moved to standalone investments module
+// - Fixed i18n imports and keys
 // CHANGELOG v1.0.0:
 // - Initial release
 // - Display balance, investments, crypto portfolio
 // - No currency conversion yet
 
-import { t } from '../../utils/i18n.js';
+import { t } from './i18n.js';
 import { getBalance, getInvestments, formatCurrency, formatCrypto } from './investmentService.js';
 
 /**
@@ -13,7 +16,7 @@ import { getBalance, getInvestments, formatCurrency, formatCrypto } from './inve
 export async function renderLevel1(accountId) {
   try {
     console.log('📊 Rendering Level 1 for account:', accountId);
-    console.log('🌍 Testing i18n:', t('investment.level1.title'));
+    console.log('🌍 Testing i18n:', t('level1.title'));
     console.log('🌍 Current language:', t !== undefined ? 'i18n loaded' : 'i18n NOT loaded');
     
     const container = document.getElementById('dashboardContent');
@@ -40,8 +43,8 @@ export async function renderLevel1(accountId) {
     container.innerHTML = `
       <div class="investments-level1">
         <div class="level1-header">
-          <h3>${t('investments.level1.title')}</h3>
-          <p class="subtitle">${t('investments.level1.subtitle')}</p>
+          <h3>${t('level1.title')}</h3>
+          <p class="subtitle">${t('level1.subtitle')}</p>
         </div>
         
         ${renderBalanceSection(balance)}
@@ -76,9 +79,9 @@ function renderBalanceSection(balance) {
   if (!balance) {
     return `
       <div class="investment-section">
-        <h4>${t('investments.level1.balance')}</h4>
+        <h4>${t('level1.balance')}</h4>
         <div class="empty-state">
-          <p>${t('investments.level1.noBalance')}</p>
+          <p>${t('level1.noBalance')}</p>
         </div>
       </div>
     `;
@@ -91,13 +94,13 @@ function renderBalanceSection(balance) {
   
   return `
     <div class="investment-section balance-section">
-      <h4>${t('investments.level1.balance')}</h4>
+      <h4>${t('level1.balance')}</h4>
       
       <div class="balance-grid">
         <div class="balance-card">
           <div class="balance-icon">🤖</div>
           <div class="balance-info">
-            <div class="balance-label">${t('investments.level1.bot')}</div>
+            <div class="balance-label">${t('level1.bot')}</div>
             <div class="balance-amount">${formatCurrency(usdt, '$')}</div>
           </div>
         </div>
@@ -105,7 +108,7 @@ function renderBalanceSection(balance) {
         <div class="balance-card">
           <div class="balance-icon">₿</div>
           <div class="balance-info">
-            <div class="balance-label">${t('investments.level1.hodl')}</div>
+            <div class="balance-label">${t('level1.hodl')}</div>
             <div class="balance-amount">${formatCrypto(btc, 'BTC')}</div>
           </div>
         </div>
@@ -113,7 +116,7 @@ function renderBalanceSection(balance) {
         <div class="balance-card">
           <div class="balance-icon">📊</div>
           <div class="balance-info">
-            <div class="balance-label">${t('investments.level1.projects')}</div>
+            <div class="balance-label">${t('level1.projects')}</div>
             <div class="balance-amount">${formatCurrency(projects, '$')}</div>
           </div>
         </div>
@@ -121,7 +124,7 @@ function renderBalanceSection(balance) {
         <div class="balance-card">
           <div class="balance-icon">💵</div>
           <div class="balance-info">
-            <div class="balance-label">${t('investments.level1.liquidity')}</div>
+            <div class="balance-label">${t('level1.liquidity')}</div>
             <div class="balance-amount">${formatCurrency(rub, '₽')}</div>
           </div>
         </div>
@@ -134,12 +137,12 @@ function renderBalanceSection(balance) {
  * Render investments section
  */
 function renderInvestmentsSection(investments) {
-  if (!investments || investments.length === 0) {
+  if (!investments || list.length === 0) {
     return `
       <div class="investment-section">
-        <h4>${t('investments.level1.portfolio')}</h4>
+        <h4>${t('level1.portfolio')}</h4>
         <div class="empty-state">
-          <p>${t('investments.level1.noInvestments')}</p>
+          <p>${t('level1.noInvestments')}</p>
         </div>
       </div>
     `;
@@ -152,14 +155,14 @@ function renderInvestmentsSection(investments) {
     return roiB - roiA;
   });
   
-  const totalInvested = investments.reduce((sum, inv) => sum + (parseFloat(inv.amount) || 0), 0);
+  const totalInvested = list.reduce((sum, inv) => sum + (parseFloat(inv.amount) || 0), 0);
   
   return `
     <div class="investment-section portfolio-section">
       <div class="section-header">
-        <h4>${t('investments.level1.portfolio')}</h4>
+        <h4>${t('level1.portfolio')}</h4>
         <div class="total-invested">
-          <span class="label">${t('investments.level1.totalInvested')}:</span>
+          <span class="label">${t('level1.totalInvested')}:</span>
           <span class="amount">${formatCurrency(totalInvested, '$')}</span>
         </div>
       </div>
@@ -175,7 +178,7 @@ function renderInvestmentsSection(investments) {
  * Render single investment card
  */
 function renderInvestmentCard(investment) {
-  const name = investment.name || t('investments.level1.unknownInvestment');
+  const name = investment.name || t('level1.unknownInvestment');
   const amount = parseFloat(investment.amount) || 0;
   const roi = parseFloat(investment.roi) || 0;
   const date = investment.date || '';
@@ -191,13 +194,13 @@ function renderInvestmentCard(investment) {
       
       <div class="investment-details">
         <div class="detail-row">
-          <span class="detail-label">${t('investments.level1.amount')}:</span>
+          <span class="detail-label">${t('level1.amount')}:</span>
           <span class="detail-value">${formatCurrency(amount, '$')}</span>
         </div>
         
         ${date ? `
           <div class="detail-row">
-            <span class="detail-label">${t('investments.level1.date')}:</span>
+            <span class="detail-label">${t('level1.date')}:</span>
             <span class="detail-value">${date}</span>
           </div>
         ` : ''}
@@ -213,9 +216,9 @@ function renderCryptoPortfolio(balance) {
   if (!balance) {
     return `
       <div class="investment-section">
-        <h4>${t('investments.level1.cryptoPortfolio')}</h4>
+        <h4>${t('level1.cryptoPortfolio')}</h4>
         <div class="empty-state">
-          <p>${t('investments.level1.noCrypto')}</p>
+          <p>${t('level1.noCrypto')}</p>
         </div>
       </div>
     `;
@@ -228,9 +231,9 @@ function renderCryptoPortfolio(balance) {
   if (btc === 0 && usdt === 0) {
     return `
       <div class="investment-section">
-        <h4>${t('investments.level1.cryptoPortfolio')}</h4>
+        <h4>${t('level1.cryptoPortfolio')}</h4>
         <div class="empty-state">
-          <p>${t('investments.level1.noCrypto')}</p>
+          <p>${t('level1.noCrypto')}</p>
         </div>
       </div>
     `;
@@ -238,8 +241,8 @@ function renderCryptoPortfolio(balance) {
   
   return `
     <div class="investment-section crypto-section">
-      <h4>${t('investments.level1.cryptoPortfolio')}</h4>
-      <p class="subtitle">${t('investments.level1.cryptoNote')}</p>
+      <h4>${t('level1.cryptoPortfolio')}</h4>
+      <p class="subtitle">${t('level1.cryptoNote')}</p>
       
       <div class="crypto-grid">
         ${btc > 0 ? `

@@ -1,4 +1,7 @@
-/* /webapp/investments/investmentService.js v1.0.0 */
+/* /webapp/investments/investmentService.js v1.0.1 */
+// CHANGELOG v1.0.1:
+// - Moved to standalone investments module
+// - Fixed import paths
 // CHANGELOG v1.0.0:
 // - Initial release
 // - Centralized Firestore access for investments
