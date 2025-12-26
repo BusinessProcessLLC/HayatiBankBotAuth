@@ -1,0 +1,395 @@
+/* /webapp/css/screens/investments.css v1.0.0 */
+/* CHANGELOG v1.0.0:
+ * - Initial release
+ * - Cyberpunk design for Level 1 investments
+ * - Balance cards, investment cards, crypto portfolio
+ * - Responsive grid layout
+ */
+
+.investments-level1 {
+  width: 100%;
+  animation: fadeIn 0.3s ease-in;
+}
+
+.level1-header {
+  text-align: center;
+  margin-bottom: 32px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--border);
+}
+
+.level1-header h3 {
+  font-size: 28px;
+  margin-bottom: 12px;
+  background: linear-gradient(135deg, var(--neon-blue) 0%, var(--neon-pink) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: 0 0 30px rgba(0, 240, 255, 0.5);
+}
+
+.level1-header .subtitle {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+/* Loading State */
+.investments-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  gap: 20px;
+}
+
+/* Investment Section */
+.investment-section {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 32px;
+  margin-bottom: 32px;
+  transition: all 0.3s;
+}
+
+.investment-section:hover {
+  border-color: rgba(0, 240, 255, 0.3);
+  box-shadow: 0 0 20px rgba(0, 240, 255, 0.1);
+}
+
+.investment-section h4 {
+  font-size: 22px;
+  margin-bottom: 24px;
+  color: var(--neon-blue);
+  text-shadow: 0 0 10px rgba(0, 240, 255, 0.3);
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.section-header h4 {
+  margin: 0;
+}
+
+.total-invested {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: rgba(0, 240, 255, 0.1);
+  border: 1px solid rgba(0, 240, 255, 0.3);
+  border-radius: 8px;
+}
+
+.total-invested .label {
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+.total-invested .amount {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--neon-green);
+  text-shadow: 0 0 10px rgba(0, 255, 159, 0.5);
+}
+
+/* Balance Grid */
+.balance-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+}
+
+.balance-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 24px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  transition: all 0.3s;
+}
+
+.balance-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--neon-blue);
+  box-shadow: 0 4px 12px rgba(0, 240, 255, 0.2);
+}
+
+.balance-icon {
+  font-size: 32px;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 240, 255, 0.1);
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.balance-info {
+  flex: 1;
+}
+
+.balance-label {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.balance-amount {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--neon-green);
+  text-shadow: 0 0 10px rgba(0, 255, 159, 0.5);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Investments Grid */
+.investments-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.investment-card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--neon-blue);
+  border-radius: 12px;
+  padding: 20px;
+  transition: all 0.3s;
+}
+
+.investment-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 12px rgba(0, 240, 255, 0.2);
+  border-color: var(--neon-blue);
+}
+
+.investment-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+  gap: 12px;
+}
+
+.investment-name {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0;
+  flex: 1;
+}
+
+.investment-roi {
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.investment-roi.positive {
+  background: rgba(0, 255, 159, 0.2);
+  color: var(--neon-green);
+}
+
+.investment-roi.negative {
+  background: rgba(220, 38, 38, 0.2);
+  color: var(--error);
+}
+
+.investment-roi.neutral {
+  background: rgba(128, 128, 128, 0.2);
+  color: var(--text-muted);
+}
+
+.investment-details {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+}
+
+.detail-label {
+  color: var(--text-muted);
+}
+
+.detail-value {
+  color: var(--text);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Crypto Portfolio */
+.crypto-section .subtitle {
+  font-size: 13px;
+  color: var(--text-muted);
+  font-style: italic;
+  margin-bottom: 20px;
+}
+
+.crypto-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 20px;
+}
+
+.crypto-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 24px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  transition: all 0.3s;
+}
+
+.crypto-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--ferrari-yellow);
+  box-shadow: 0 4px 12px rgba(255, 215, 0, 0.2);
+}
+
+.crypto-icon {
+  font-size: 36px;
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 215, 0, 0.1);
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.crypto-info {
+  flex: 1;
+}
+
+.crypto-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+
+.crypto-symbol {
+  font-size: 13px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.crypto-amount {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--ferrari-yellow);
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+/* Empty State */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.empty-state p {
+  margin: 0;
+  font-size: 16px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .investment-section {
+    padding: 20px;
+  }
+  
+  .level1-header h3 {
+    font-size: 24px;
+  }
+  
+  .balance-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .investments-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .crypto-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .total-invested {
+    width: 100%;
+    justify-content: space-between;
+  }
+}
+
+@media (max-width: 480px) {
+  .balance-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .balance-card {
+    padding: 16px;
+  }
+  
+  .balance-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 24px;
+  }
+  
+  .balance-amount {
+    font-size: 18px;
+  }
+  
+  .investment-card {
+    padding: 16px;
+  }
+  
+  .crypto-card {
+    padding: 16px;
+  }
+  
+  .crypto-icon {
+    width: 48px;
+    height: 48px;
+    font-size: 28px;
+  }
+}

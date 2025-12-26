@@ -1,4 +1,7 @@
-/* /webapp/css/main.css v1.1.0 */
+/* /webapp/css/main.css v1.1.1 */
+/* CHANGELOG v1.1.1:
+ * - Added investments.css import
+ */
 
 @import "./base/reset.css";
 @import "./base/variables.css";
@@ -24,9 +27,10 @@
 @import "./screens/dashboard.css";
 @import "./screens/create-account.css";
 @import "./screens/financial-report.css";
-@import "./screens/offering-zone.css"; /* 🆕 NEW */
+@import "./screens/offering-zone.css";
+@import "./screens/investments.css"; /* 🆕 NEW */
 
 @import "./features/business-triangle.css";
-@import "./screens/20L.css"; /* 🆕 ADD THIS */
+@import "./screens/20L.css";
 
 @import "./responsive.css";

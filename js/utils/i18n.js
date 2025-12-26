@@ -1,4 +1,6 @@
-/* /webapp/js/utils/i18n.js v1.1.1 */
+/* /webapp/js/utils/i18n.js v1.1.2 */
+// CHANGELOG v1.1.2:
+// - Added investment.* keys for Level 1 dashboard
 // CHANGELOG v1.1.1:
 // - ADDED: Missing 20L.stats.remaining key
 // - FIXED: 20L.dashboard.addCounterparty key
@@ -43,6 +45,29 @@ const translations = {
     'offering.area': 'Площадь',
     'offering.roi': 'Доходность',
     'offering.handover': 'Передача',
+    
+    // Investment Level 1 (NEW v1.1.2)
+    'investment.level1.title': '📊 Инвестиции: Уровень №1',
+    'investment.level1.subtitle': 'Цифровые финансовые активы',
+    'investment.balance.title': '💰 Баланс активов',
+    'investment.balance.bot': 'Бот (USDT)',
+    'investment.balance.hodl': 'HODL (BTC)',
+    'investment.balance.projects': 'Проекты',
+    'investment.balance.liquidity': 'Ликвидность (RUB)',
+    'investment.balance.total': 'Итого',
+    'investment.list.title': '📋 Мои инвестиции',
+    'investment.list.empty': 'У вас пока нет активных инвестиций',
+    'investment.list.addFirst': 'Добавьте первую инвестицию для начала',
+    'investment.item.roi': 'ROI',
+    'investment.item.status': 'Статус',
+    'investment.item.date': 'Дата',
+    'investment.status.active': 'Активна',
+    'investment.status.completed': 'Завершена',
+    'investment.status.pending': 'В ожидании',
+    'investment.crypto.title': '₿ Крипто-портфель',
+    'investment.crypto.empty': 'Нет криптоактивов',
+    'investment.crypto.balance': 'Баланс',
+    'investment.loading': 'Загрузка инвестиций...',
     
     // 20L System - Product Selector
     '20L.productSelector.title': 'Система управления лидами 20L',
@@ -213,6 +238,29 @@ const translations = {
     'offering.area': 'Area',
     'offering.roi': 'ROI',
     'offering.handover': 'Handover',
+    
+    // Investment Level 1 (NEW v1.1.2)
+    'investment.level1.title': '📊 Investments: Level #1',
+    'investment.level1.subtitle': 'Digital Financial Assets',
+    'investment.balance.title': '💰 Asset Balance',
+    'investment.balance.bot': 'Bot (USDT)',
+    'investment.balance.hodl': 'HODL (BTC)',
+    'investment.balance.projects': 'Projects',
+    'investment.balance.liquidity': 'Liquidity (RUB)',
+    'investment.balance.total': 'Total',
+    'investment.list.title': '📋 My Investments',
+    'investment.list.empty': 'You have no active investments yet',
+    'investment.list.addFirst': 'Add your first investment to get started',
+    'investment.item.roi': 'ROI',
+    'investment.item.status': 'Status',
+    'investment.item.date': 'Date',
+    'investment.status.active': 'Active',
+    'investment.status.completed': 'Completed',
+    'investment.status.pending': 'Pending',
+    'investment.crypto.title': '₿ Crypto Portfolio',
+    'investment.crypto.empty': 'No crypto assets',
+    'investment.crypto.balance': 'Balance',
+    'investment.loading': 'Loading investments...',
     
     // 20L System - Product Selector
     '20L.productSelector.title': '20L Lead Management System',

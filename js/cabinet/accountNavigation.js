@@ -1,4 +1,6 @@
-/* /webapp/js/cabinet/accountNavigation.js v1.2.0 */
+/* /webapp/js/cabinet/accountNavigation.js v1.2.1 */
+// CHANGELOG v1.2.1:
+// - Added Step 4 (Investments) integration with Level 1 dashboard
 // CHANGELOG v1.2.0:
 // - FIXED: Step 6 now calls showBusinessManagement() with accountId
 // - Added accountId passing to all steps
@@ -8,6 +10,7 @@
 import { getAccountById } from './accounts.js';
 import { showBusinessManagement } from './businessTriangle.js';
 import { renderFinancialReport } from './reports/financialReport.js';
+import { renderInvestmentLevel1 } from './investments/level1.js';
 
 /**
  * Show account dashboard with 7-step navigation
@@ -151,7 +154,8 @@ async function renderStepContent(stepNumber, account) {
       break;
       
     case 4:
-      contentContainer.innerHTML = renderStep4(account);
+      // ✅ NEW: Investment Level 1 Dashboard
+      await renderInvestmentLevel1(account.accountId);
       break;
       
     case 5:
@@ -159,7 +163,7 @@ async function renderStepContent(stepNumber, account) {
       break;
       
     case 6:
-      // ✅ FIXED: Business Management with Product Selector
+      // Business Management with Product Selector
       await showBusinessManagement(account.accountId, '#dashboardContent');
       break;
       
@@ -173,7 +177,8 @@ async function renderStepContent(stepNumber, account) {
 }
 
 /**
- * Render Step 4: Investments
+ * Render Step 4: Investments (LEGACY - kept for reference)
+ * Now using renderInvestmentLevel1() from investments/level1.js
  */
 function renderStep4(account) {
   return `
