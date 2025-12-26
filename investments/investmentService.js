@@ -65,7 +65,7 @@ export async function getBalance(accountId) {
 /**
  * Get user investments from Firestore
  */
-export async function getInvestments(accountId) {
+export async function getInvestmentProjects(accountId) {
   try {
     const session = getSession();
     if (!session) throw new Error('No session');
@@ -79,7 +79,7 @@ export async function getInvestments(accountId) {
         'ngrok-skip-browser-warning': 'true'
       },
       body: JSON.stringify({
-        path: `accounts/${accountId}/investments`,
+        path: `accounts/${accountId}/investment_projects`,
         authToken: session.authToken
       })
     });

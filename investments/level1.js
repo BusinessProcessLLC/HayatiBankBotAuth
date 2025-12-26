@@ -7,11 +7,11 @@
 // - Fixed i18n imports and keys
 // CHANGELOG v1.0.0:
 // - Initial release
-// - Display balance, investments, crypto portfolio
+// - Display balance, investmentProjects, crypto portfolio
 // - No currency conversion yet
 
 import { t } from './i18n.js';
-import { getBalance, getInvestments, formatCurrency, formatCrypto } from './investmentService.js';
+import { getBalance, getInvestmentProjects, formatCurrency, formatCrypto } from './investmentService.js';
 
 
 
@@ -41,9 +41,9 @@ export async function renderLevel1(accountId) {
     `;
     
     // Fetch data
-    const [balance, investments] = await Promise.all([
+    const [balance, investmentProjects] = await Promise.all([
       getBalance(accountId),
-      getInvestments(accountId)
+      getInvestmentProjects(accountId)
     ]);
     
     // Render UI
@@ -55,8 +55,9 @@ export async function renderLevel1(accountId) {
         </div>
         
         ${renderBalanceSection(balance)}
-        ${renderCryptoPortfolio(balance)}
-        ${renderInvestmentsSection(investments)}
+        ${renderHodlPortfolio(balance)}
+        ${renderInvestmentProjectsSection(investmentProjects)}
+        ${renderSpotBotsSection(investmentProjects)}
 
       </div>
     `;
@@ -150,9 +151,9 @@ function renderBalanceSection(balance) {
 
 
 /**
- * Render crypto portfolio section
+ * Render HODL portfolio section
  */
-function renderCryptoPortfolio(balance) {
+function renderHodlPortfolio(balance) {
   if (!balance) {
     return `
       <div class="investment-section">
@@ -216,10 +217,10 @@ function renderCryptoPortfolio(balance) {
 
 
 /**
- * Render investments section
+ * Render investmentProjects section
  */
-function renderInvestmentsSection(investments) {
-  if (!investments || investments.length === 0) {
+function renderInvestmentProjectsSection(investmentProjects) {
+  if (!investmentProjects || investmentProjects.length === 0) {
     return `
       <div class="investment-section">
         <h4>${t('level1.portfolio')}</h4>
@@ -231,7 +232,52 @@ function renderInvestmentsSection(investments) {
   }
   
   // Sort by ROI descending
-  const sorted = [...investments].sort((a, b) => {
+  const sorted = [...investmentProjects].sort((a, b) => {
+    const roiA = parseFloat(a.roi) || 0;
+    const roiB = parseFloat(b.roi) || 0;
+    return roiB - roiA;
+  });
+  
+  const totalInvested = sorted.reduce((sum, inv) => sum + (parseFloat(inv.amount) || 0), 0);
+  
+  return `
+    <div class="investment-section portfolio-section">
+      <div class="section-header">
+        <h4>${t('level1.portfolio')}</h4>
+        <div class="total-invested">
+          <span class="label">${t('level1.totalInvested')}:</span>
+          <span class="amount">${formatCurrency(totalInvested, '$')}</span>
+        </div>
+      </div>
+      
+      <div class="investments-grid">
+        ${sorted.map(inv => renderInvestmentCard(inv)).join('')}
+      </div>
+    </div>
+  `;
+}
+
+
+
+
+
+/**
+ * Render spot bots section
+ */
+function renderSpotBotsSection(investmentProjects) {
+  if (!investmentProjects || investmentProjects.length === 0) {
+    return `
+      <div class="investment-section">
+        <h4>${t('level1.portfolio')}</h4>
+        <div class="empty-state">
+          <p>${t('level1.noInvestments')}</p>
+        </div>
+      </div>
+    `;
+  }
+  
+  // Sort by ROI descending
+  const sorted = [...investmentProjects].sort((a, b) => {
     const roiA = parseFloat(a.roi) || 0;
     const roiB = parseFloat(b.roi) || 0;
     return roiB - roiA;
