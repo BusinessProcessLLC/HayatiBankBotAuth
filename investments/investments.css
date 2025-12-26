@@ -1,8 +1,9 @@
-/* /webapp/investments/investments.css v1.0.4 */
-/* CHANGELOG v1.0.4:
- * - FORCED 1 column on mobile with !important
- * - Added 640px breakpoint for safety
- * - Balance grid: 1x4 layout guaranteed on all mobile devices
+/* /webapp/investments/investments.css v1.0.5 */
+/* CHANGELOG v1.0.5:
+ * - FIXED: Crypto portfolio mobile adaptation
+ * - Added text-overflow: ellipsis for crypto-name
+ * - Added min-width: 0 and flex-shrink: 0 for proper overflow
+ * - Crypto grid: 1 column on all mobile devices
  * CHANGELOG v1.0.2:
  * - FIXED: Mobile adaptation for balance cards (768px: column layout, 480px: single column)
  * - Added word-break and white-space for long labels
@@ -295,6 +296,7 @@
 
 .crypto-info {
   flex: 1;
+  min-width: 0;
 }
 
 .crypto-name {
@@ -302,6 +304,9 @@
   font-weight: 600;
   color: var(--text);
   margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .crypto-symbol {
@@ -318,6 +323,8 @@
   text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
   font-variant-numeric: tabular-nums;
   text-align: right;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 /* Empty State */
@@ -386,7 +393,30 @@
   }
   
   .crypto-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr !important;
+    gap: 12px;
+  }
+  
+  .crypto-card {
+    padding: 16px;
+  }
+  
+  .crypto-icon {
+    width: 48px;
+    height: 48px;
+    font-size: 32px;
+  }
+  
+  .crypto-name {
+    font-size: 15px;
+  }
+  
+  .crypto-symbol {
+    font-size: 12px;
+  }
+  
+  .crypto-amount {
+    font-size: 16px;
   }
   
   .section-header {
@@ -402,6 +432,11 @@
 
 @media (max-width: 640px) {
   .balance-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px;
+  }
+  
+  .crypto-grid {
     grid-template-columns: 1fr !important;
     gap: 12px;
   }
@@ -442,12 +477,29 @@
   }
   
   .crypto-card {
-    padding: 16px;
+    padding: 14px;
+  }
+  
+  .crypto-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px;
   }
   
   .crypto-icon {
-    width: 48px;
-    height: 48px;
+    width: 44px;
+    height: 44px;
     font-size: 28px;
+  }
+  
+  .crypto-name {
+    font-size: 14px;
+  }
+  
+  .crypto-symbol {
+    font-size: 11px;
+  }
+  
+  .crypto-amount {
+    font-size: 15px;
   }
 }
