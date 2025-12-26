@@ -10,10 +10,6 @@
 import { getSession } from '../js/session.js';
 import { API_URL } from '../js/config.js';
 
-
-
-
-
 /**
  * Get user balance from Firestore
  */
@@ -45,8 +41,7 @@ export async function getBalance(accountId) {
     const balances = result.documents || [];
     
     // Get 'default' balance or first one
-    // const balance = balances.find(b => b.id === 'default') || balances[0] || null;
-    const balance = balances.find(b => b.status === 'active') || balances[0] || null;
+    const balance = balances.find(b => b.id === 'default') || balances[0] || null;
     
     console.log('✅ Balance loaded:', balance);
     
@@ -58,14 +53,10 @@ export async function getBalance(accountId) {
   }
 }
 
-
-
-
-
 /**
  * Get user investments from Firestore
  */
-export async function getInvestmentProjects(accountId) {
+export async function getInvestments(accountId) {
   try {
     const session = getSession();
     if (!session) throw new Error('No session');
@@ -79,7 +70,7 @@ export async function getInvestmentProjects(accountId) {
         'ngrok-skip-browser-warning': 'true'
       },
       body: JSON.stringify({
-        path: `accounts/${accountId}/investment_projects`,
+        path: `accounts/${accountId}/investments`,
         authToken: session.authToken
       })
     });
@@ -101,10 +92,6 @@ export async function getInvestmentProjects(accountId) {
     return [];
   }
 }
-
-
-
-
 
 /**
  * Get user payments from Firestore
@@ -149,10 +136,6 @@ export async function getPayments(accountId, limit = 10) {
   }
 }
 
-
-
-
-
 /**
  * Format currency (helper)
  */
@@ -164,10 +147,6 @@ export function formatCurrency(amount, currency = '₽') {
   
   return `${formatted} ${currency}`;
 }
-
-
-
-
 
 /**
  * Format crypto amount (helper)

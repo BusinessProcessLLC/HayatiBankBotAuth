@@ -1,4 +1,6 @@
-/* /webapp/investments/i18n.js v1.0.0 */
+/* /webapp/investments/i18n.js v1.1.0 */
+// CHANGELOG v1.1.0:
+// - Added translations for HODL, Projects, SpotBot, PaymentsMade sections
 // CHANGELOG v1.0.0:
 // - Standalone i18n for investments module
 // - RU/EN translations for Level 1
@@ -6,7 +8,7 @@
 const translations = {
   ru: {
     // Level 1 Dashboard
-    'level1.title': '📊 Инвестор: уровень №1',
+    'level1.title': '📊 Инвестиции: Уровень №1',
     'level1.subtitle': 'Цифровые финансовые активы',
     'level1.bot': 'Бот (USDT)',
     'level1.hodl': 'HODL (BTC)',
@@ -20,9 +22,33 @@ const translations = {
     'level1.noBalance': 'Нет данных о балансе',
     'level1.noInvestments': 'Нет активных инвестиций',
     'level1.noCrypto': 'Нет криптоактивов',
-    'level1.cryptoPortfolio': 'Портфель долгосрочных инвестиций («Хаяти HODL»)',
+    'level1.cryptoPortfolio': 'HODL портфель долгосрочных инвестиций («Хаяти HODL»)',
     'level1.cryptoNote': 'Курсы обновляются каждые 5 минут',
     'level1.unknownInvestment': 'Неизвестная инвестиция',
+    
+    // Investment Projects
+    'projects.title': '📊 Проекты роста капитала',
+    'projects.subtitle': 'Инвестиции в проекты',
+    'projects.noProjects': 'Нет активных проектов',
+    'projects.roi': 'ROI',
+    'projects.invested': 'Инвестировано',
+    
+    // Spot Bot
+    'spotBot.title': '🦾 Спотовый бот «Хаяти»',
+    'spotBot.subtitle': 'Пассивный доход от торговли',
+    'spotBot.noBots': 'Нет активных ботов',
+    'spotBot.profit': 'Прибыль',
+    'spotBot.active': 'Активен',
+    
+    // Payments Made
+    'payments.title': '💸 Осуществлённые выплаты',
+    'payments.subtitle': 'История транзакций',
+    'payments.noPayments': 'Нет выплат',
+    'payments.made': 'Выплачено',
+    'payments.reinvested': 'Реинвестировано',
+    'payments.savedInBtc': 'Сохранено в BTC',
+    'payments.transferred': 'Переведено',
+    'payments.total': 'Всего выплат',
     
     // Balance Section
     'balance.title': '💰 Баланс активов',
@@ -48,7 +74,7 @@ const translations = {
     'status.pending': 'В ожидании',
     
     // Crypto Portfolio
-    'crypto.title': 'Портфель долгосрочных инвестиций («Хаяти HODL»)',
+    'crypto.title': '₿ Крипто-портфель',
     'crypto.empty': 'Нет криптоактивов',
     'crypto.balance': 'Баланс',
     'crypto.price': 'Цена',
@@ -71,7 +97,7 @@ const translations = {
   
   en: {
     // Level 1 Dashboard
-    'level1.title': '📊 Investor: Level #1',
+    'level1.title': '📊 Investments: Level #1',
     'level1.subtitle': 'Digital Financial Assets',
     'level1.bot': 'Bot (USDT)',
     'level1.hodl': 'HODL (BTC)',
@@ -85,9 +111,33 @@ const translations = {
     'level1.noBalance': 'No balance data',
     'level1.noInvestments': 'No active investments',
     'level1.noCrypto': 'No crypto assets',
-    'level1.cryptoPortfolio': 'Long Term Investments Portfolio (Hayati HODL)',
+    'level1.cryptoPortfolio': 'HODL Long-Term Investment Portfolio (Hayati HODL)',
     'level1.cryptoNote': 'Rates update every 5 minutes',
     'level1.unknownInvestment': 'Unknown investment',
+    
+    // Investment Projects
+    'projects.title': '📊 Capital Growth Projects',
+    'projects.subtitle': 'Project investments',
+    'projects.noProjects': 'No active projects',
+    'projects.roi': 'ROI',
+    'projects.invested': 'Invested',
+    
+    // Spot Bot
+    'spotBot.title': '🦾 Hayati Spot Bot',
+    'spotBot.subtitle': 'Passive income from trading',
+    'spotBot.noBots': 'No active bots',
+    'spotBot.profit': 'Profit',
+    'spotBot.active': 'Active',
+    
+    // Payments Made
+    'payments.title': '💸 Payments Made',
+    'payments.subtitle': 'Transaction history',
+    'payments.noPayments': 'No payments',
+    'payments.made': 'Paid out',
+    'payments.reinvested': 'Reinvested',
+    'payments.savedInBtc': 'Saved in BTC',
+    'payments.transferred': 'Transferred',
+    'payments.total': 'Total payments',
     
     // Balance Section
     'balance.title': '💰 Asset Balance',
@@ -113,7 +163,7 @@ const translations = {
     'status.pending': 'Pending',
     
     // Crypto Portfolio
-    'crypto.title': 'Long Term Investments Portfolio (Hayati HODL)',
+    'crypto.title': '₿ Crypto Portfolio',
     'crypto.empty': 'No crypto assets',
     'crypto.balance': 'Balance',
     'crypto.price': 'Price',

@@ -1,21 +1,14 @@
-/* /webapp/investments/level1.js v1.0.2 */
+/* /webapp/investments/level1.js v1.1.0 */
+// CHANGELOG v1.1.0:
+// - Added 4 sections: HODL, Projects, SpotBot, PaymentsMade
+// - All sections use horizontal scroll carousel
+// - Proper naming as per user specification
 // CHANGELOG v1.0.2:
 // - FIXED: Changed `list` to `investments`/`sorted` variables
 // - FIXED: All i18n keys use correct prefixes
-// CHANGELOG v1.0.1:
-// - Moved to standalone investments module
-// - Fixed i18n imports and keys
-// CHANGELOG v1.0.0:
-// - Initial release
-// - Display balance, investmentProjects, crypto portfolio
-// - No currency conversion yet
 
 import { t } from './i18n.js';
-import { getBalance, getInvestmentProjects, formatCurrency, formatCrypto } from './investmentService.js';
-
-
-
-
+import { getBalance, getInvestmentProjects, getPayments, formatCurrency, formatCrypto } from './investmentService.js';
 
 /**
  * Render Level 1 investments dashboard
@@ -23,8 +16,6 @@ import { getBalance, getInvestmentProjects, formatCurrency, formatCrypto } from 
 export async function renderLevel1(accountId) {
   try {
     console.log('📊 Rendering Level 1 for account:', accountId);
-    console.log('🌍 Testing i18n:', t('level1.title'));
-    console.log('🌍 Current language:', t !== undefined ? 'i18n loaded' : 'i18n NOT loaded');
     
     const container = document.getElementById('dashboardContent');
     if (!container) {
@@ -41,9 +32,10 @@ export async function renderLevel1(accountId) {
     `;
     
     // Fetch data
-    const [balance, investmentProjects] = await Promise.all([
+    const [balance, investmentProjects, payments] = await Promise.all([
       getBalance(accountId),
-      getInvestmentProjects(accountId)
+      getInvestmentProjects(accountId),
+      getPayments(accountId, 50)
     ]);
     
     // Render UI
@@ -58,10 +50,12 @@ export async function renderLevel1(accountId) {
         ${renderHodlPortfolio(balance)}
         ${renderInvestmentProjectsSection(investmentProjects)}
         ${renderSpotBotsSection(investmentProjects)}
-        ${renderPaymentsMadeSection(investmentProjects)}
-
+        ${renderPaymentsMadeSection(payments)}
       </div>
     `;
+    
+    // Attach carousel scroll handlers
+    attachCarouselHandlers();
     
     console.log('✅ Level 1 rendered');
     
@@ -81,10 +75,6 @@ export async function renderLevel1(accountId) {
     }
   }
 }
-
-
-
-
 
 /**
  * Render balance section
@@ -112,7 +102,7 @@ function renderBalanceSection(balance) {
       
       <div class="balance-grid">
         <div class="balance-card">
-          <div class="balance-icon">🦾</div>
+          <div class="balance-icon">🤖</div>
           <div class="balance-info">
             <div class="balance-label">${t('level1.bot')}</div>
             <div class="balance-amount">${formatCurrency(usdt, '$')}</div>
@@ -147,12 +137,8 @@ function renderBalanceSection(balance) {
   `;
 }
 
-
-
-
-
 /**
- * Render HODL portfolio section
+ * Render HODL портфель долгосрочных инвестиций («Хаяти HODL»)
  */
 function renderHodlPortfolio(balance) {
   if (!balance) {
@@ -182,51 +168,51 @@ function renderHodlPortfolio(balance) {
   }
   
   return `
-    <div class="investment-section crypto-section">
+    <div class="investment-section hodl-section">
       <h4>${t('level1.cryptoPortfolio')}</h4>
       <p class="subtitle">${t('level1.cryptoNote')}</p>
       
-      <div class="crypto-grid">
-        ${btc > 0 ? `
-          <div class="crypto-card">
-            <div class="crypto-icon">₿</div>
-            <div class="crypto-info">
-              <div class="crypto-name">Bitcoin</div>
-              <div class="crypto-symbol">BTC</div>
+      <div class="carousel-wrapper">
+        <button class="carousel-btn carousel-prev" data-carousel="hodl">←</button>
+        <div class="carousel-track" data-track="hodl">
+          ${btc > 0 ? `
+            <div class="crypto-card carousel-item">
+              <div class="crypto-icon">₿</div>
+              <div class="crypto-info">
+                <div class="crypto-name">Bitcoin</div>
+                <div class="crypto-symbol">BTC</div>
+              </div>
+              <div class="crypto-amount">${formatCrypto(btc, 'BTC')}</div>
             </div>
-            <div class="crypto-amount">${formatCrypto(btc, 'BTC')}</div>
-          </div>
-        ` : ''}
-        
-        ${usdt > 0 ? `
-          <div class="crypto-card">
-            <div class="crypto-icon">₮</div>
-            <div class="crypto-info">
-              <div class="crypto-name">Tether</div>
-              <div class="crypto-symbol">USDT</div>
+          ` : ''}
+          
+          ${usdt > 0 ? `
+            <div class="crypto-card carousel-item">
+              <div class="crypto-icon">₮</div>
+              <div class="crypto-info">
+                <div class="crypto-name">Tether</div>
+                <div class="crypto-symbol">USDT</div>
+              </div>
+              <div class="crypto-amount">${formatCurrency(usdt, '$')}</div>
             </div>
-            <div class="crypto-amount">${formatCurrency(usdt, '$')}</div>
-          </div>
-        ` : ''}
+          ` : ''}
+        </div>
+        <button class="carousel-btn carousel-next" data-carousel="hodl">→</button>
       </div>
     </div>
   `;
 }
 
-
-
-
-
 /**
- * Render investmentProjects section
+ * Render проекты - рост капитала
  */
 function renderInvestmentProjectsSection(investmentProjects) {
   if (!investmentProjects || investmentProjects.length === 0) {
     return `
       <div class="investment-section">
-        <h4>${t('level1.portfolio')}</h4>
+        <h4>${t('projects.title')}</h4>
         <div class="empty-state">
-          <p>${t('level1.noInvestments')}</p>
+          <p>${t('projects.noProjects')}</p>
         </div>
       </div>
     `;
@@ -242,130 +228,100 @@ function renderInvestmentProjectsSection(investmentProjects) {
   const totalInvested = sorted.reduce((sum, inv) => sum + (parseFloat(inv.amount) || 0), 0);
   
   return `
-    <div class="investment-section portfolio-section">
+    <div class="investment-section projects-section">
       <div class="section-header">
-        <h4>${t('level1.portfolio')}</h4>
+        <h4>${t('projects.title')}</h4>
         <div class="total-invested">
-          <span class="label">${t('level1.totalInvested')}:</span>
+          <span class="label">${t('projects.invested')}:</span>
           <span class="amount">${formatCurrency(totalInvested, '$')}</span>
         </div>
       </div>
+      <p class="subtitle">${t('projects.subtitle')}</p>
       
-      <div class="investments-grid">
-        ${sorted.map(inv => renderInvestmentCard(inv)).join('')}
+      <div class="carousel-wrapper">
+        <button class="carousel-btn carousel-prev" data-carousel="projects">←</button>
+        <div class="carousel-track" data-track="projects">
+          ${sorted.map(project => renderProjectCard(project)).join('')}
+        </div>
+        <button class="carousel-btn carousel-next" data-carousel="projects">→</button>
       </div>
     </div>
   `;
 }
 
-
-
-
-
 /**
- * Render spot bots section
+ * Render Спотовый бот «Хаяти» - пассивный доход
  */
 function renderSpotBotsSection(investmentProjects) {
-  if (!investmentProjects || investmentProjects.length === 0) {
-    return `
-      <div class="investment-section">
-        <h4>${t('level1.portfolio')}</h4>
-        <div class="empty-state">
-          <p>${t('level1.noInvestments')}</p>
-        </div>
-      </div>
-    `;
-  }
-  
-  // Sort by ROI descending
-  const sorted = [...investmentProjects].sort((a, b) => {
-    const roiA = parseFloat(a.roi) || 0;
-    const roiB = parseFloat(b.roi) || 0;
-    return roiB - roiA;
-  });
-  
-  const totalInvested = sorted.reduce((sum, inv) => sum + (parseFloat(inv.amount) || 0), 0);
+  // TODO: Separate collection for spot bots
+  // For now, use same data with filter or placeholder
   
   return `
-    <div class="investment-section portfolio-section">
+    <div class="investment-section spotbot-section">
       <div class="section-header">
-        <h4>${t('level1.portfolio')}</h4>
-        <div class="total-invested">
-          <span class="label">${t('level1.totalInvested')}:</span>
-          <span class="amount">${formatCurrency(totalInvested, '$')}</span>
-        </div>
+        <h4>${t('spotBot.title')}</h4>
       </div>
+      <p class="subtitle">${t('spotBot.subtitle')}</p>
       
-      <div class="investments-grid">
-        ${sorted.map(inv => renderInvestmentCard(inv)).join('')}
+      <div class="empty-state">
+        <p>${t('spotBot.noBots')}</p>
       </div>
     </div>
   `;
 }
 
-
-
-
-
 /**
- * Render payments made section
+ * Render осуществленные выплаты
  */
-function renderPaymentsMadeSection(investmentProjects) {
-  if (!investmentProjects || investmentProjects.length === 0) {
+function renderPaymentsMadeSection(payments) {
+  if (!payments || payments.length === 0) {
     return `
       <div class="investment-section">
-        <h4>${t('level1.portfolio')}</h4>
+        <h4>${t('payments.title')}</h4>
         <div class="empty-state">
-          <p>${t('level1.noInvestments')}</p>
+          <p>${t('payments.noPayments')}</p>
         </div>
       </div>
     `;
   }
   
-  // Sort by ROI descending
-  const sorted = [...investmentProjects].sort((a, b) => {
-    const roiA = parseFloat(a.roi) || 0;
-    const roiB = parseFloat(b.roi) || 0;
-    return roiB - roiA;
-  });
-  
-  const totalInvested = sorted.reduce((sum, inv) => sum + (parseFloat(inv.amount) || 0), 0);
+  const totalPaid = payments.reduce((sum, p) => sum + (parseFloat(p.amountMade) || 0), 0);
   
   return `
-    <div class="investment-section portfolio-section">
+    <div class="investment-section payments-section">
       <div class="section-header">
-        <h4>${t('level1.portfolio')}</h4>
+        <h4>${t('payments.title')}</h4>
         <div class="total-invested">
-          <span class="label">${t('level1.totalInvested')}:</span>
-          <span class="amount">${formatCurrency(totalInvested, '$')}</span>
+          <span class="label">${t('payments.total')}:</span>
+          <span class="amount">${formatCurrency(totalPaid, '$')}</span>
         </div>
       </div>
+      <p class="subtitle">${t('payments.subtitle')}</p>
       
-      <div class="investments-grid">
-        ${sorted.map(inv => renderInvestmentCard(inv)).join('')}
+      <div class="carousel-wrapper">
+        <button class="carousel-btn carousel-prev" data-carousel="payments">←</button>
+        <div class="carousel-track" data-track="payments">
+          ${payments.map(payment => renderPaymentCard(payment)).join('')}
+        </div>
+        <button class="carousel-btn carousel-next" data-carousel="payments">→</button>
       </div>
     </div>
   `;
 }
 
-
-
-
-
-
 /**
- * Render single investment card
+ * Render project card
  */
-function renderInvestmentCard(investment) {
-  const name = investment.name || t('level1.unknownInvestment');
-  const amount = parseFloat(investment.amount) || 0;
-  const roi = parseFloat(investment.roi) || 0;
-  const date = investment.date || '';
+function renderProjectCard(project) {
+  const name = project.name || t('level1.unknownInvestment');
+  const amount = parseFloat(project.amount) || 0;
+  const roi = parseFloat(project.roi) || 0;
+  const date = project.date || '';
   
   const roiClass = roi > 0 ? 'positive' : roi < 0 ? 'negative' : 'neutral';
   
   return `
-    <div class="investment-card">
+    <div class="investment-card carousel-item">
       <div class="investment-header">
         <h5 class="investment-name">${name}</h5>
         ${roi !== 0 ? `<span class="investment-roi ${roiClass}">${roi > 0 ? '+' : ''}${roi}%</span>` : ''}
@@ -388,9 +344,78 @@ function renderInvestmentCard(investment) {
   `;
 }
 
+/**
+ * Render payment card
+ */
+function renderPaymentCard(payment) {
+  const date = payment.date || '';
+  const amountMade = parseFloat(payment.amountMade) || 0;
+  const amountReinvested = parseFloat(payment.amountReinvested) || 0;
+  const amountSavedInBtc = parseFloat(payment.amountSavedInBtc) || 0;
+  const amountTransferred = parseFloat(payment.amountTransferred) || 0;
+  
+  return `
+    <div class="payment-card carousel-item">
+      <div class="payment-header">
+        <h5 class="payment-date">📅 ${date}</h5>
+      </div>
+      
+      <div class="payment-details">
+        ${amountMade > 0 ? `
+          <div class="detail-row">
+            <span class="detail-label">💸 ${t('payments.made')}:</span>
+            <span class="detail-value positive">${formatCurrency(amountMade, '$')}</span>
+          </div>
+        ` : ''}
+        
+        ${amountReinvested > 0 ? `
+          <div class="detail-row">
+            <span class="detail-label">🔄 ${t('payments.reinvested')}:</span>
+            <span class="detail-value">${formatCurrency(amountReinvested, '$')}</span>
+          </div>
+        ` : ''}
+        
+        ${amountSavedInBtc > 0 ? `
+          <div class="detail-row">
+            <span class="detail-label">₿ ${t('payments.savedInBtc')}:</span>
+            <span class="detail-value">${formatCrypto(amountSavedInBtc, 'BTC')}</span>
+          </div>
+        ` : ''}
+        
+        ${amountTransferred > 0 ? `
+          <div class="detail-row">
+            <span class="detail-label">📤 ${t('payments.transferred')}:</span>
+            <span class="detail-value">${formatCurrency(amountTransferred, '$')}</span>
+          </div>
+        ` : ''}
+      </div>
+    </div>
+  `;
+}
 
-
-
+/**
+ * Attach carousel scroll handlers
+ */
+function attachCarouselHandlers() {
+  document.querySelectorAll('.carousel-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const carouselName = btn.dataset.carousel;
+      const track = document.querySelector(`[data-track="${carouselName}"]`);
+      const direction = btn.classList.contains('carousel-prev') ? -1 : 1;
+      
+      if (track) {
+        const cardWidth = track.querySelector('.carousel-item')?.offsetWidth || 300;
+        const gap = 20; // From CSS
+        const scrollAmount = (cardWidth + gap) * direction;
+        
+        track.scrollBy({
+          left: scrollAmount,
+          behavior: 'smooth'
+        });
+      }
+    });
+  });
+}
 
 // Export for global access
 if (typeof window !== 'undefined') {

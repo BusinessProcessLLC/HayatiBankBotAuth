@@ -1,19 +1,12 @@
-/* /webapp/investments/investments.css v1.0.7 */
-/* CHANGELOG v1.0.7:
+/* /webapp/investments/investments.css v1.1.0 */
+/* CHANGELOG v1.1.0:
+ * - Added carousel styles for horizontal scrolling
+ * - Added payment card styles
+ * - Mobile adaptation for carousels
+ * CHANGELOG v1.0.7:
  * - FIXED: Removed extra closing brace after .crypto-amount
  * - MOBILE: Crypto cards now vertical (icon → name/symbol → amount)
  * - Better readability on narrow screens
- * CHANGELOG v1.0.2:
- * - FIXED: Mobile adaptation for balance cards (768px: column layout, 480px: single column)
- * - Added word-break and white-space for long labels
- * CHANGELOG v1.0.1:
- * - Moved to standalone investments module
- * CHANGELOG v1.0.0:
- * - Initial release
- * - Cyberpunk design for Level 1 investments
- * - Balance cards, investment cards, crypto portfolio
- * - Responsive grid layout
- */
 
 .investments-level1 {
   width: 100%;
@@ -342,6 +335,117 @@
   font-size: 16px;
 }
 
+/* Carousel Wrapper */
+.carousel-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.carousel-track {
+  display: flex;
+  gap: 20px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-behavior: smooth;
+  scrollbar-width: thin;
+  scrollbar-color: var(--neon-blue) transparent;
+  padding: 4px 0;
+  flex: 1;
+}
+
+.carousel-track::-webkit-scrollbar {
+  height: 8px;
+}
+
+.carousel-track::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+}
+
+.carousel-track::-webkit-scrollbar-thumb {
+  background: var(--neon-blue);
+  border-radius: 4px;
+}
+
+.carousel-track::-webkit-scrollbar-thumb:hover {
+  background: var(--neon-pink);
+}
+
+.carousel-item {
+  flex-shrink: 0;
+  min-width: 280px;
+  max-width: 320px;
+}
+
+.carousel-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(0, 240, 255, 0.1);
+  border: 1px solid var(--neon-blue);
+  color: var(--neon-blue);
+  font-size: 20px;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  z-index: 2;
+}
+
+.carousel-btn:hover {
+  background: var(--neon-blue);
+  color: var(--bg);
+  transform: scale(1.1);
+  box-shadow: 0 0 20px rgba(0, 240, 255, 0.5);
+}
+
+.carousel-btn:active {
+  transform: scale(0.95);
+}
+
+/* Payment Card */
+.payment-card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--neon-green);
+  border-radius: 12px;
+  padding: 20px;
+  transition: all 0.3s;
+}
+
+.payment-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 12px rgba(0, 255, 159, 0.2);
+  border-color: var(--neon-green);
+}
+
+.payment-header {
+  margin-bottom: 16px;
+}
+
+.payment-date {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0;
+}
+
+.payment-details {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.payment-details .detail-value.positive {
+  color: var(--neon-green);
+  font-weight: 700;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .investment-section {
@@ -439,6 +543,21 @@
   .total-invested {
     width: 100%;
     justify-content: space-between;
+  }
+  
+  /* Carousel mobile */
+  .carousel-wrapper {
+    gap: 8px;
+  }
+  
+  .carousel-btn {
+    width: 36px;
+    height: 36px;
+    font-size: 18px;
+  }
+  
+  .carousel-item {
+    min-width: 240px;
   }
 }
 
