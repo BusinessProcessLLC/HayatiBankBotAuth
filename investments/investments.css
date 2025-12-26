@@ -1,8 +1,8 @@
-/* /webapp/investments/investments.css v1.0.3 */
-/* CHANGELOG v1.0.3:
- * - FIXED: Balance cards always horizontal (no vertical text)
- * - 768px+: Single column grid
- * - Added min-width: 0 and text-overflow for long labels
+/* /webapp/investments/investments.css v1.0.4 */
+/* CHANGELOG v1.0.4:
+ * - FORCED 1 column on mobile with !important
+ * - Added 640px breakpoint for safety
+ * - Balance grid: 1x4 layout guaranteed on all mobile devices
  * CHANGELOG v1.0.2:
  * - FIXED: Mobile adaptation for balance cards (768px: column layout, 480px: single column)
  * - Added word-break and white-space for long labels
@@ -347,7 +347,7 @@
   }
   
   .balance-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr !important;
     gap: 12px;
   }
   
@@ -400,13 +400,20 @@
   }
 }
 
+@media (max-width: 640px) {
+  .balance-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px;
+  }
+}
+
 @media (max-width: 480px) {
   .investment-section {
     padding: 16px;
   }
   
   .balance-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr !important;
     gap: 12px;
   }
   
