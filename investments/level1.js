@@ -1,4 +1,7 @@
-/* /webapp/investments/level1.js v1.0.1 */
+/* /webapp/investments/level1.js v1.0.2 */
+// CHANGELOG v1.0.2:
+// - FIXED: Changed `list` to `investments`/`sorted` variables
+// - FIXED: All i18n keys use correct prefixes
 // CHANGELOG v1.0.1:
 // - Moved to standalone investments module
 // - Fixed i18n imports and keys
@@ -137,7 +140,7 @@ function renderBalanceSection(balance) {
  * Render investments section
  */
 function renderInvestmentsSection(investments) {
-  if (!investments || list.length === 0) {
+  if (!investments || investments.length === 0) {
     return `
       <div class="investment-section">
         <h4>${t('level1.portfolio')}</h4>
@@ -155,7 +158,7 @@ function renderInvestmentsSection(investments) {
     return roiB - roiA;
   });
   
-  const totalInvested = list.reduce((sum, inv) => sum + (parseFloat(inv.amount) || 0), 0);
+  const totalInvested = sorted.reduce((sum, inv) => sum + (parseFloat(inv.amount) || 0), 0);
   
   return `
     <div class="investment-section portfolio-section">
