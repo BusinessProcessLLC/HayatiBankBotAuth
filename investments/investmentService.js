@@ -1,11 +1,10 @@
-/* /webapp/investments/investmentService.js v1.0.1 */
+/* /webapp/investments/investmentService.js v1.1.0 */
+// CHANGELOG v1.1.0:
+// - Renamed getInvestments → getInvestmentProjects
+// - Fixed path: investment_projects (not investments)
 // CHANGELOG v1.0.1:
 // - Moved to standalone investments module
 // - Fixed import paths
-// CHANGELOG v1.0.0:
-// - Initial release
-// - Centralized Firestore access for investments
-// - Ready for future DB migration
 
 import { getSession } from '../js/session.js';
 import { API_URL } from '../js/config.js';
@@ -54,14 +53,14 @@ export async function getBalance(accountId) {
 }
 
 /**
- * Get user investments from Firestore
+ * Get user investment projects from Firestore
  */
-export async function getInvestments(accountId) {
+export async function getInvestmentProjects(accountId) {
   try {
     const session = getSession();
     if (!session) throw new Error('No session');
     
-    console.log('📈 Fetching investments for account:', accountId);
+    console.log('📈 Fetching investment projects for account:', accountId);
     
     const response = await fetch(`${API_URL}/api/firestore/get`, {
       method: 'POST',
@@ -70,25 +69,25 @@ export async function getInvestments(accountId) {
         'ngrok-skip-browser-warning': 'true'
       },
       body: JSON.stringify({
-        path: `accounts/${accountId}/investments`,
+        path: `accounts/${accountId}/investment_projects`,
         authToken: session.authToken
       })
     });
     
     if (!response.ok) {
-      console.warn('⚠️ No investments found');
+      console.warn('⚠️ No investment projects found');
       return [];
     }
     
     const result = await response.json();
-    const investments = result.documents || [];
+    const projects = result.documents || [];
     
-    console.log(`✅ Loaded ${investments.length} investments`);
+    console.log(`✅ Loaded ${projects.length} investment projects`);
     
-    return investments;
+    return projects;
     
   } catch (err) {
-    console.error('❌ Error fetching investments:', err);
+    console.error('❌ Error fetching investment projects:', err);
     return [];
   }
 }
