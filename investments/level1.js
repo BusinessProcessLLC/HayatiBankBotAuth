@@ -58,6 +58,7 @@ export async function renderLevel1(accountId) {
         ${renderHodlPortfolio(balance)}
         ${renderInvestmentProjectsSection(investmentProjects)}
         ${renderSpotBotsSection(investmentProjects)}
+        ${renderPaymentsMadeSection(investmentProjects)}
 
       </div>
     `;
@@ -301,6 +302,52 @@ function renderSpotBotsSection(investmentProjects) {
     </div>
   `;
 }
+
+
+
+
+
+/**
+ * Render payments made section
+ */
+function renderPaymentsMadeSection(investmentProjects) {
+  if (!investmentProjects || investmentProjects.length === 0) {
+    return `
+      <div class="investment-section">
+        <h4>${t('level1.portfolio')}</h4>
+        <div class="empty-state">
+          <p>${t('level1.noInvestments')}</p>
+        </div>
+      </div>
+    `;
+  }
+  
+  // Sort by ROI descending
+  const sorted = [...investmentProjects].sort((a, b) => {
+    const roiA = parseFloat(a.roi) || 0;
+    const roiB = parseFloat(b.roi) || 0;
+    return roiB - roiA;
+  });
+  
+  const totalInvested = sorted.reduce((sum, inv) => sum + (parseFloat(inv.amount) || 0), 0);
+  
+  return `
+    <div class="investment-section portfolio-section">
+      <div class="section-header">
+        <h4>${t('level1.portfolio')}</h4>
+        <div class="total-invested">
+          <span class="label">${t('level1.totalInvested')}:</span>
+          <span class="amount">${formatCurrency(totalInvested, '$')}</span>
+        </div>
+      </div>
+      
+      <div class="investments-grid">
+        ${sorted.map(inv => renderInvestmentCard(inv)).join('')}
+      </div>
+    </div>
+  `;
+}
+
 
 
 
