@@ -17,7 +17,7 @@ import { setupLoginHandler, setupRegisterHandler, setupResetHandler, setupFormSw
 import { getSession, saveSession } from './js/session.js';
 import { showLoadingScreen, showAuthScreen, showCabinet } from './js/ui.js';
 import { setupTokenInterceptor, setupPeriodicTokenCheck } from './js/tokenManager.js'; // ← NEW
-import './js/account.js'; // Imports logout & deleteAccount functions
+import './cabinet/account.js'; // Imports logout & deleteAccount functions
 
 // Initialize Firebase
 const app = initializeApp(FIREBASE_CONFIG);
