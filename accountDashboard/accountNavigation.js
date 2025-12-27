@@ -1,4 +1,6 @@
-/* /webapp/accountDashboard/accountNavigation.js v1.4.0 */
+/* /webapp/accountDashboard/accountNavigation.js v1.4.1 */
+// CHANGELOG v1.4.1:
+// - FIXED: goBack() import path (../cabinet/accountsUI.js)
 // CHANGELOG v1.4.0:
 // - MOVED: From /cabinet/ to /accountDashboard/ (modular)
 // - FIXED: Import paths for new module location
@@ -19,7 +21,7 @@
 
 import { getAccountById } from '../cabinet/accounts.js';
 import { showBusinessManagement } from '../businessTriangle/businessTriangle.js';
-import { renderFinancialReport } from '../finStatement/financialReport.js';
+import { renderFinancialReport } from '../js/cabinet/reports/financialReport.js';
 import { renderLevel1 } from '../investments/level1.js';
 
 /**
@@ -242,7 +244,7 @@ function goBack() {
   // Clear global accountId
   delete window.currentAccountId;
   
-  import('./accountsUI.js').then(module => {
+  import('../cabinet/accountsUI.js').then(module => {
     module.renderAccountsList();
   });
 }
