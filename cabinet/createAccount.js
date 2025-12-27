@@ -1,4 +1,7 @@
-// webapp/js/cabinet/createAccount.js
+// webapp/cabinet/createAccount.js v1.3.0
+// CHANGELOG v1.3.0:
+// - MOVED: From /js/cabinet/ to /cabinet/ (modular)
+// - TODO: Add i18n integration (next version)
 // Create account form and logic
 
 import { createAccount } from './accounts.js';
