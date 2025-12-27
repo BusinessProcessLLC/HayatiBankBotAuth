@@ -1,4 +1,6 @@
-/* /webapp/js/cabinet/accountNavigation.js v1.2.2 */
+/* /webapp/js/cabinet/accountNavigation.js v1.2.3 */
+// CHANGELOG v1.2.3:
+// - FIXED: Import businessTriangle from ../../businessTriangle/ (modular)
 // CHANGELOG v1.2.2:
 // - Fixed import path for investments module (now in /investments/)
 // CHANGELOG v1.2.1:
@@ -10,7 +12,7 @@
 // Account dashboard navigation with 7 steps
 
 import { getAccountById } from './accounts.js';
-import { showBusinessManagement } from './businessTriangle.js';
+import { showBusinessManagement } from '../../businessTriangle/businessTriangle.js';
 import { renderFinancialReport } from './reports/financialReport.js';
 import { renderLevel1 } from '../../investments/level1.js';
 
