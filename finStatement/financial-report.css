@@ -1,8 +1,9 @@
-/* /webapp/css/screens/financial-report.css v1.1.0 */
+/* /webapp/finStatement/financial-report.css v1.1.0 */
 /* CHANGELOG v1.1.0:
- * - Added hierarchy styles (group headers, subcategories)
- * - Added visual indentation
- * - Added color coding (green income, red expenses)
+ * - MOVED: From /css/screens/ to /finStatement/ (modular)
+ * - Hierarchy styles (group headers, subcategories)
+ * - Visual indentation
+ * - Color coding (green income, red expenses)
  */
 
 .financial-report {

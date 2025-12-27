@@ -1,8 +1,8 @@
 /* /webapp/js/cabinet/reports/reportManager.js v1.0.0 */
 // CRUD management for financial report items
 
-import { getSession } from '../../session.js';
-import { API_URL } from '../../config.js';
+import { getSession } from '../js/session.js';
+import { API_URL } from '../js/config.js';
 import { renderFinancialReport } from './financialReport.js';
 
 // Store current context

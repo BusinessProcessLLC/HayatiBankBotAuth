@@ -3,8 +3,8 @@
 // - Merge Firestore data with categories.js template
 // - Fill missing categories with amount = 0
 
-import { getSession } from '../../session.js';
-import { API_URL } from '../../config.js';
+import { getSession } from '../js/session.js';
+import { API_URL } from '../js/config.js';
 
 // Categories template (from utils/categories.js)
 const CATEGORIES_TEMPLATE = {

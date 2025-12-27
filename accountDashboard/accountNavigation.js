@@ -19,7 +19,7 @@
 
 import { getAccountById } from '../cabinet/accounts.js';
 import { showBusinessManagement } from '../businessTriangle/businessTriangle.js';
-import { renderFinancialReport } from '../js/cabinet/reports/financialReport.js';
+import { renderFinancialReport } from '../finStatement/financialReport.js';
 import { renderLevel1 } from '../investments/level1.js';
 
 /**
