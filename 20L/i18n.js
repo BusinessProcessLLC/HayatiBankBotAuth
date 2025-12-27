@@ -8,7 +8,7 @@
 const translations = {
   ru: {
     // Product Selector
-    '20L.productSelector.title': 'Система управления лидами 20L',
+    '20L.productSelector.title': 'Система 20L',
     '20L.productSelector.subtitle': 'Выберите продукт для работы',
     '20L.productSelector.createFirst': 'Создайте первый продукт',
     '20L.productSelector.createFirstDesc': 'Добавьте продукт, с которым вы работаете',
@@ -140,7 +140,7 @@ const translations = {
   
   en: {
     // Product Selector
-    '20L.productSelector.title': '20L Lead Management System',
+    '20L.productSelector.title': '20L System',
     '20L.productSelector.subtitle': 'Select product to work with',
     '20L.productSelector.createFirst': 'Create first product',
     '20L.productSelector.createFirstDesc': 'Add a product you work with',
