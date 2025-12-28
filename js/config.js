@@ -2,7 +2,7 @@
 // Firebase configuration and API URL
 
 export const FIREBASE_CONFIG = {
-  apiKey: "AIzaSyB5CJlw23KPmN5HbY6S9gQKbUgb41_RxMw",
+  apiKey: "AIzaSyBBGJlw23KPmN5HbY6S9gQKbUgb41_RxMw", // ✅ ИСПРАВЛЕНО! (было CJlw)
   authDomain: "tms-test-nlyynt.firebaseapp.com",
   databaseURL: "https://tms-test-nlyynt.firebaseio.com",
   projectId: "tms-test-nlyynt",
