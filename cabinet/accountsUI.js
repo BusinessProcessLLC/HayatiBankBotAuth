@@ -1,4 +1,7 @@
-/* /webapp/cabinet/accountsUI.js v1.3.1 */
+/* /webapp/cabinet/accountsUI.js v1.4.0 */
+// CHANGELOG v1.4.0:
+// - ADDED: Event listener for 'cabinetReady' event from ui.js
+// - FIXED: No longer relies on ui.js to auto-initialize
 // CHANGELOG v1.3.1:
 // - FIXED: Import accountNavigation from ../accountDashboard/ (modular)
 // CHANGELOG v1.3.0:
@@ -289,4 +292,20 @@ export function showCreateAccountButton() {
   } else {
     actionsContainer.prepend(createBtn);
   }
+}
+
+/**
+ * Initialize cabinet when ready
+ * Listens to 'cabinetReady' event from ui.js
+ */
+if (typeof window !== 'undefined') {
+  window.addEventListener('cabinetReady', async (event) => {
+    console.log('📋 Cabinet ready event received:', event.detail);
+    
+    // Initialize cabinet UI
+    showCreateAccountButton();
+    await renderAccountsList();
+  });
+  
+  console.log('✅ Cabinet event listener registered');
 }

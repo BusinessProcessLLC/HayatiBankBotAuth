@@ -1,4 +1,8 @@
-/* /webapp/js/ui.js v1.1.0 */
+/* /webapp/js/ui.js v1.2.0 */
+// CHANGELOG v1.2.0:
+// - REMOVED: Dynamic import of ../cabinet/accountsUI.js (circular dependency)
+// - ADDED: Event-based cabinet initialization
+// - FIXED: Core layer should not import Business layer
 // CHANGELOG v1.1.0:
 // - FIXED: Import path for cabinet module (now ../cabinet/)
 // UI management (screens, errors, buttons)
@@ -72,16 +76,12 @@ export function showCabinet(userData) {
   
   console.log('✅ Cabinet opened for:', userData.email);
   
-  // Load accounts (async import to avoid circular dependencies)
-  setTimeout(async () => {
-    try {
-      const { renderAccountsList, showCreateAccountButton } = await import('../cabinet/accountsUI.js');
-      showCreateAccountButton();
-      await renderAccountsList();
-    } catch (err) {
-      console.error('❌ Error loading accounts:', err);
-    }
-  }, 100);
+  // ✅ NEW: Emit event for cabinet modules to initialize
+  // This allows cabinet module to handle its own initialization
+  // without creating circular dependency (Core → Business)
+  window.dispatchEvent(new CustomEvent('cabinetReady', { 
+    detail: userData 
+  }));
 }
 
 /**
