@@ -125,9 +125,6 @@ export function setupRegisterHandler(auth, db) {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
       
-// ⏳ даём Firestore подхватить контекст
-await new Promise(res => setTimeout(res, 300));
-
       // Get ID Token
       const token = await user.getIdToken();
       
