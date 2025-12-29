@@ -9,7 +9,7 @@
 // - FIXED: Import paths for new location
 // Account management (Logout, Delete Account)
 
-import { getAuth } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+import { getAuth } from 'https://www.gstatic.com/firebasejs/12.7.0/firebase-auth.js';
 import { clearSession, getSession } from '../js/session.js';
 import { showAuthScreen, showLoadingScreen } from '../js/ui.js';
 import { deleteUserAccount, deleteTelegramSession } from '../js/api.js';

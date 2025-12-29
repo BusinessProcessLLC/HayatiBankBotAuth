@@ -11,13 +11,13 @@ import {
   signInWithEmailAndPassword, 
   createUserWithEmailAndPassword,
   sendPasswordResetEmail 
-} from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+} from 'https://www.gstatic.com/firebasejs/12.7.0/firebase-auth.js';
 import { 
   getFirestore, 
   doc, 
   setDoc,
   serverTimestamp 
-} from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+} from 'https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js';
 
 import { linkTelegramAccount } from '../js/api.js';
 import { saveSession } from '../js/session.js';
@@ -135,6 +135,9 @@ export function setupRegisterHandler(auth, db) {
       const tgUser = tg?.initDataUnsafe?.user;
       const tgChatId = tgUser?.id;
       
+      console.log('user.uid');
+      console.log(user.uid);
+
       // Create user document in Firestore
       await setDoc(doc(db, 'users', user.uid), {
         uid: user.uid,

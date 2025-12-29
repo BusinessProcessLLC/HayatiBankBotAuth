@@ -6,7 +6,7 @@
 // - Global fetch interceptor
 // - User-visible status messages
 
-import { getAuth } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+import { getAuth } from 'https://www.gstatic.com/firebasejs/12.7.0/firebase-auth.js';
 import { getSession, saveSession } from './session.js';
 
 // Track refresh state to avoid multiple simultaneous refreshes
