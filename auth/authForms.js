@@ -1,14 +1,11 @@
-/* /webapp/auth/authForms.js v1.0.1 */
+/* /webapp/auth/authForms.js v1.0.2 */
+// CHANGELOG v1.0.2:
+// - ADDED: Fallback to REST API if Firestore SDK fails
+// - Import createDocument from firestoreREST.js
 // CHANGELOG v1.0.1:
 // - FIXED: Use passed db instance instead of importing getFirestore
 // - FIXED: Removed unused getFirestore import
 // - This fixes Firestore connection errors during registration
-// CHANGELOG v1.0.0:
-// - Initial release
-// - MOVED: From /js/auth.js to /auth/ (modular)
-// - SPLIT: Separated forms logic from account actions
-// - FIXED: Import paths for new location
-// Authentication form handlers (Login, Register, Reset Password)
 
 import { 
   getAuth, 
@@ -26,6 +23,7 @@ import { linkTelegramAccount } from '../js/api.js';
 import { saveSession } from '../js/session.js';
 import { showLoadingScreen, showAuthScreen, showCabinet, showError, showSuccess, clearErrors } from '../js/ui.js';
 import { t } from './i18n.js';
+import { createDocument } from '../js/firestoreREST.js'; // ✅ NEW: REST API fallback
 
 // Get Telegram WebApp
 const tg = window.Telegram?.WebApp;
@@ -96,7 +94,7 @@ export function setupLoginHandler(auth) {
 
 /**
  * Setup register form handler
- * ✅ FIXED: Now uses passed db instance
+ * ✅ v1.0.2: Added REST API fallback
  */
 export function setupRegisterHandler(auth, db) {
   document.getElementById('registerBtn')?.addEventListener('click', async () => {
@@ -142,7 +140,7 @@ export function setupRegisterHandler(auth, db) {
       
       console.log('📝 Creating Firestore document for uid:', user.uid);
       
-      // ✅ Create user document in Firestore using PASSED db instance
+      // Prepare user document data
       const userDocData = {
         uid: user.uid,
         email: user.email,
@@ -185,9 +183,31 @@ export function setupRegisterHandler(auth, db) {
       
       console.log('📄 User document data prepared:', userDocData);
       
-      await setDoc(doc(db, 'users', user.uid), userDocData);
+      // ✅ Try SDK first, fallback to REST API
+      let docCreated = false;
       
-      console.log('✅ User document created in Firestore');
+      try {
+        console.log('🔧 Attempting SDK write...');
+        await setDoc(doc(db, 'users', user.uid), userDocData);
+        docCreated = true;
+        console.log('✅ User document created via SDK');
+      } catch (sdkError) {
+        console.warn('⚠️ SDK write failed, trying REST API...', sdkError);
+        
+        // ✅ Fallback: REST API
+        try {
+          await createDocument('users', user.uid, userDocData, token);
+          docCreated = true;
+          console.log('✅ User document created via REST API');
+        } catch (restError) {
+          console.error('❌ REST API also failed:', restError);
+          throw restError;
+        }
+      }
+      
+      if (!docCreated) {
+        throw new Error('Failed to create user document');
+      }
       
       // Link Telegram if opened from Telegram
       const telegramData = getTelegramData();
@@ -221,7 +241,6 @@ export function setupRegisterHandler(auth, db) {
       } else if (error.code === 'auth/weak-password') {
         errorMessage = t('auth.error.weakPassword');
       } else {
-        // Include error details for debugging
         errorMessage = `${t('auth.error.registerFailed')}: ${error.message}`;
       }
       
