@@ -1,5 +1,8 @@
-// webapp/js/api.js v1.2.8
-// All backend API calls - Fixed for ngrok
+/* /webapp/js/api.js v1.2.9 */
+// CHANGELOG v1.2.9:
+// - Added createUserDocument function for backend user creation
+// CHANGELOG v1.2.8:
+// - All backend API calls - Fixed for ngrok
 
 import { API_URL } from './config.js';
 
@@ -14,7 +17,7 @@ export async function checkTelegramBinding(chatId, initData) {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',
-        'ngrok-skip-browser-warning': 'true' // 🔧 FIX: Bypass ngrok warning page
+        'ngrok-skip-browser-warning': 'true'
       },
       body: JSON.stringify({ chatId, initData })
     });
@@ -44,7 +47,7 @@ export async function silentLogin(uid, chatId, initData) {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',
-        'ngrok-skip-browser-warning': 'true' // 🔧 FIX: Bypass ngrok warning page
+        'ngrok-skip-browser-warning': 'true'
       },
       body: JSON.stringify({ uid, chatId, initData })
     });
@@ -72,7 +75,7 @@ export async function validateToken(authToken, uid) {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',
-        'ngrok-skip-browser-warning': 'true' // 🔧 FIX: Bypass ngrok warning page
+        'ngrok-skip-browser-warning': 'true'
       },
       body: JSON.stringify({ authToken, uid })
     });
@@ -111,7 +114,7 @@ export async function linkTelegramAccount(uid, authToken, telegramData) {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',
-        'ngrok-skip-browser-warning': 'true' // 🔧 FIX: Bypass ngrok warning page
+        'ngrok-skip-browser-warning': 'true'
       },
       body: JSON.stringify({
         uid,
@@ -146,7 +149,7 @@ export async function deleteUserAccount(uid, authToken) {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',
-        'ngrok-skip-browser-warning': 'true' // 🔧 FIX: Bypass ngrok warning page
+        'ngrok-skip-browser-warning': 'true'
       },
       body: JSON.stringify({ uid, authToken })
     });
@@ -176,7 +179,7 @@ export async function deleteTelegramSession(chatId, uid, authToken) {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',
-        'ngrok-skip-browser-warning': 'true' // 🔧 FIX: Bypass ngrok warning page
+        'ngrok-skip-browser-warning': 'true'
       },
       body: JSON.stringify({ chatId, uid, authToken })
     });
@@ -191,6 +194,38 @@ export async function deleteTelegramSession(chatId, uid, authToken) {
     return result.success === true;
   } catch (err) {
     console.error('❌ Error deleting telegram_sessions:', err);
+    return false;
+  }
+}
+
+/**
+ * Create user document via backend
+ * ✅ NEW: Solves Firestore WebSocket issues
+ */
+export async function createUserDocument(uid, authToken, userData) {
+  try {
+    console.log('📝 Creating user document via backend...');
+    
+    const response = await fetch(`${API_URL}/api/users/create`, {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'ngrok-skip-browser-warning': 'true'
+      },
+      body: JSON.stringify({ uid, authToken, userData })
+    });
+    
+    if (!response.ok) {
+      const error = await response.json();
+      console.error('❌ User creation failed:', error);
+      return false;
+    }
+    
+    const result = await response.json();
+    console.log('✅ User document created via backend');
+    return result.success === true;
+  } catch (err) {
+    console.error('❌ Error creating user document:', err);
     return false;
   }
 }

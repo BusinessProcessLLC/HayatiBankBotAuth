@@ -1,11 +1,8 @@
-/* /webapp/auth/authForms.js v1.0.2 */
-// CHANGELOG v1.0.2:
-// - ADDED: Fallback to REST API if Firestore SDK fails
-// - Import createDocument from firestoreREST.js
-// CHANGELOG v1.0.1:
-// - FIXED: Use passed db instance instead of importing getFirestore
-// - FIXED: Removed unused getFirestore import
-// - This fixes Firestore connection errors during registration
+/* /webapp/auth/authForms.js v1.0.3 */
+// CHANGELOG v1.0.3:
+// - FIXED: Use backend API for user document creation
+// - Removed Firestore SDK and REST API attempts
+// - Much cleaner and more reliable
 
 import { 
   getAuth, 
@@ -13,17 +10,11 @@ import {
   createUserWithEmailAndPassword,
   sendPasswordResetEmail 
 } from 'https://www.gstatic.com/firebasejs/12.7.0/firebase-auth.js';
-import { 
-  doc, 
-  setDoc,
-  serverTimestamp 
-} from 'https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js';
 
-import { linkTelegramAccount } from '../js/api.js';
+import { linkTelegramAccount, createUserDocument } from '../js/api.js';
 import { saveSession } from '../js/session.js';
 import { showLoadingScreen, showAuthScreen, showCabinet, showError, showSuccess, clearErrors } from '../js/ui.js';
 import { t } from './i18n.js';
-import { createDocument } from '../js/firestoreREST.js'; // ✅ NEW: REST API fallback
 
 // Get Telegram WebApp
 const tg = window.Telegram?.WebApp;
@@ -94,7 +85,7 @@ export function setupLoginHandler(auth) {
 
 /**
  * Setup register form handler
- * ✅ v1.0.2: Added REST API fallback
+ * ✅ v1.0.3: Uses backend API for user document creation
  */
 export function setupRegisterHandler(auth, db) {
   document.getElementById('registerBtn')?.addEventListener('click', async () => {
@@ -132,7 +123,6 @@ export function setupRegisterHandler(auth, db) {
       
       console.log('✅ Registration successful:', user.email);
       console.log('✅ ID Token obtained');
-      console.log('🔍 Using db instance:', !!db);
       
       // Get Telegram data if available
       const tgUser = tg?.initDataUnsafe?.user;
@@ -142,15 +132,11 @@ export function setupRegisterHandler(auth, db) {
       
       // Prepare user document data
       const userDocData = {
-        uid: user.uid,
         email: user.email,
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
         status: 'active',
         createdBy: tgChatId ? 'telegram-mini-app' : 'web',
         
         profile: {
-          createdAt: serverTimestamp(),
           userType: tgChatId ? 'telegram' : 'web',
           riskLevel: 'unknown',
           segment: 'registered'
@@ -183,31 +169,14 @@ export function setupRegisterHandler(auth, db) {
       
       console.log('📄 User document data prepared:', userDocData);
       
-      // ✅ Try SDK first, fallback to REST API
-      let docCreated = false;
+      // ✅ Create user document via backend
+      const created = await createUserDocument(user.uid, token, userDocData);
       
-      try {
-        console.log('🔧 Attempting SDK write...');
-        await setDoc(doc(db, 'users', user.uid), userDocData);
-        docCreated = true;
-        console.log('✅ User document created via SDK');
-      } catch (sdkError) {
-        console.warn('⚠️ SDK write failed, trying REST API...', sdkError);
-        
-        // ✅ Fallback: REST API
-        try {
-          await createDocument('users', user.uid, userDocData, token);
-          docCreated = true;
-          console.log('✅ User document created via REST API');
-        } catch (restError) {
-          console.error('❌ REST API also failed:', restError);
-          throw restError;
-        }
-      }
-      
-      if (!docCreated) {
+      if (!created) {
         throw new Error('Failed to create user document');
       }
+      
+      console.log('✅ User document created via backend');
       
       // Link Telegram if opened from Telegram
       const telegramData = getTelegramData();
