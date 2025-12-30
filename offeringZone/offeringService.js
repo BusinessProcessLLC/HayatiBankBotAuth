@@ -1,12 +1,12 @@
-/* /webapp/offeringZone/offeringService.js v1.1.0 */
+/* /webapp/offeringZone/offeringService.js v2.0.0 */
+// CHANGELOG v2.0.0:
+// - BREAKING: Now uses market pool (/HBD_AVAILABLE_UNITS)
+// - REMOVED: fetchAvailableUnits() - obsolete
+// - ADDED: fetchMarketSnapshot() - new method
+// - PERFORMANCE: Single collection read instead of nested queries
 // CHANGELOG v1.1.0:
 // - MOVED: From /js/cabinet/reports/ to /offeringZone/ (modular)
 // - FIXED: Import paths
-// CHANGELOG v1.0.0:
-// - Initial release
-// - Calculate available budget from financial report
-// - Filter units from HBD collection
-// - Centralized API calls
 
 import { getSession } from '../js/session.js';
 import { API_URL } from '../js/config.js';
@@ -51,78 +51,60 @@ export function calculateAvailableBudget(financialData) {
 }
 
 /**
- * Fetch units from HBD (all projects)
+ * 🆕 NEW: Fetch market snapshot from pool
+ * @returns {Promise<Array>} Array of available units
  */
-export async function fetchAvailableUnits() {
+export async function fetchMarketSnapshot() {
   try {
     const session = getSession();
     if (!session) throw new Error('No session');
     
-    console.log('🏢 Fetching HBD units...');
+    console.log('📊 Fetching market snapshot from pool...');
     
-    // Fetch all projects
-    const projectsResponse = await fetch(`${API_URL}/api/firestore/get`, {
+    const response = await fetch(`${API_URL}/api/firestore/get`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'ngrok-skip-browser-warning': 'true'
       },
       body: JSON.stringify({
-        path: 'HBD',
+        path: 'HBD_AVAILABLE_UNITS',
         authToken: session.authToken
       })
     });
     
-    if (!projectsResponse.ok) {
-      console.warn('⚠️ No projects found');
+    if (!response.ok) {
+      console.warn('⚠️ Market pool not found or empty');
       return [];
     }
     
-    const projectsResult = await projectsResponse.json();
-    const projects = projectsResult.documents || [];
+    const result = await response.json();
+    const units = result.documents || [];
     
-    // Fetch units from all active projects
-    const allUnits = [];
+    console.log(`✅ Fetched ${units.length} units from market pool`);
     
-    for (const project of projects) {
-      // Check if project is active
-      if (project.status !== 'active') continue;
-      
-      // Fetch units
-      const unitsResponse = await fetch(`${API_URL}/api/firestore/get`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'ngrok-skip-browser-warning': 'true'
-        },
-        body: JSON.stringify({
-          path: `HBD/${project.id}/units`,
-          authToken: session.authToken
-        })
-      });
-      
-      if (unitsResponse.ok) {
-        const unitsResult = await unitsResponse.json();
-        const units = unitsResult.documents || [];
-        
-        // Add project info to each unit
-        units.forEach(unit => {
-          unit.projectId = project.id;
-          unit.projectName = project.projectName || project.id;
-        });
-        
-        allUnits.push(...units);
-      }
+    // Log snapshot metadata
+    if (units.length > 0) {
+      const firstUnit = units[0];
+      console.log(`📅 Snapshot generated at: ${firstUnit.generatedAt}`);
+      console.log(`📍 Source: ${firstUnit.source}`);
     }
     
-    console.log(`✅ Fetched ${allUnits.length} units from ${projects.length} projects`);
-    
-    return allUnits;
+    return units;
     
   } catch (err) {
-    console.error('❌ Error fetching units:', err);
+    console.error('❌ Error fetching market snapshot:', err);
     return [];
   }
+}
+
+/**
+ * ❌ DEPRECATED: Use fetchMarketSnapshot() instead
+ * @deprecated Since v2.0.0
+ */
+export async function fetchAvailableUnits() {
+  console.warn('⚠️ fetchAvailableUnits() is deprecated - use fetchMarketSnapshot()');
+  return fetchMarketSnapshot();
 }
 
 /**
@@ -139,12 +121,11 @@ export function filterUnitsByBudget(units, budgetRub, rates) {
   });
   
   // Filter criteria:
-  // 1. Status = Available
+  // 1. Status = Available (already filtered in pool)
   // 2. Price <= budget
   // 3. Has valid price
   const filtered = units.filter(unit => {
     return (
-      unit.status === 'Available' &&
       unit.unitPriceAed > 0 &&
       unit.unitPriceAed <= budgetAED
     );

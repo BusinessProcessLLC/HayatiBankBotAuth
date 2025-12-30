@@ -1,15 +1,13 @@
-/* /webapp/offeringZone/offeringZone.js v1.1.0 */
+/* /webapp/offeringZone/offeringZone.js v1.2.0 */
+// CHANGELOG v1.2.0:
+// - UPDATED: Now uses fetchMarketSnapshot() instead of fetchAvailableUnits()
+// - ADDED: Snapshot metadata logging
 // CHANGELOG v1.1.0:
 // - MOVED: From /js/cabinet/reports/ to /offeringZone/ (modular)
-// - FIXED: Import paths for i18n
-// CHANGELOG v1.0.0:
-// - Initial release
-// - Display personalized real estate offers
-// - Calculate budget from financial report
-// - Show top-3 units from HBD
+// - FIXED: Import paths
 
 import { t } from './i18n.js';
-import { calculateAvailableBudget, fetchAvailableUnits, filterUnitsByBudget, getTopOffers } from './offeringService.js';
+import { calculateAvailableBudget, fetchMarketSnapshot, filterUnitsByBudget, getTopOffers } from './offeringService.js';
 
 /**
  * Render offering zone
@@ -32,8 +30,8 @@ export async function renderOfferingZone(accountId, year, financialData, rates) 
     const offeringContainer = createOfferingContainer(budgetInfo, 'loading');
     reportContainer.appendChild(offeringContainer);
     
-    // Fetch units
-    const allUnits = await fetchAvailableUnits();
+    // 🆕 NEW: Fetch from market pool
+    const allUnits = await fetchMarketSnapshot();
     
     if (allUnits.length === 0) {
       updateOfferingContainer(offeringContainer, budgetInfo, [], rates);
@@ -55,6 +53,8 @@ export async function renderOfferingZone(accountId, year, financialData, rates) 
     console.error('❌ Error rendering offering zone:', err);
   }
 }
+
+
 
 /**
  * Create offering container (initial state)
