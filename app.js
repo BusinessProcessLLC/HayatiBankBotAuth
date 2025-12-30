@@ -1,17 +1,9 @@
-/* /webapp/app.js v1.3.1 */
-// CHANGELOG v1.3.1:
-// - FIXED: Force Firestore to use Long Polling instead of WebSocket
-// - This fixes "WebChannelConnection RPC Write stream transport errored"
-// - Added experimentalForceLongPolling to initializeFirestore
-// CHANGELOG v1.3.0:
-// - FIXED: Import paths updated for auth module
-// - ADDED: Cabinet module initialization
-// - REMOVED: Reliance on ui.js auto-loading cabinet
-// CHANGELOG v1.2.6:
-// - Added global token refresh interceptor
-// - Added periodic token health check
-// - Improved session reliability for Telegram miniapp
-
+/* /webapp/app.js v2.0.0 */
+// CHANGELOG v2.0.0:
+// - BREAKING: Multi-session support
+// - ADDED: Custom Token → ID Token exchange in all flows
+// - ADDED: Background token refresh
+// - FIXED: initData hash validation bypass for existing sessions
 // Main entry point
 
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js';
@@ -22,9 +14,9 @@ import { initializeFirestore, CACHE_SIZE_UNLIMITED } from 'https://www.gstatic.c
 import { FIREBASE_CONFIG } from './js/config.js';
 import { checkTelegramBinding, silentLogin, validateToken } from './js/api.js';
 import { setupLoginHandler, setupRegisterHandler, setupResetHandler, setupFormSwitching } from './auth/authForms.js';
-import { getSession, saveSession } from './js/session.js';
+import { getSession, saveSession, getCurrentChatId, listAllSessions } from './js/session.js';
 import { showLoadingScreen, showAuthScreen, showCabinet } from './js/ui.js';
-import { setupTokenInterceptor, setupPeriodicTokenCheck } from './js/tokenManager.js';
+import { setupTokenInterceptor, setupPeriodicTokenCheck, setupBackgroundTokenRefresh, ensureFreshToken } from './js/tokenManager.js';
 import './auth/accountActions.js'; // Imports logout & deleteAccount functions
 import './cabinet/accountsUI.js'; // Registers cabinetReady event listener
 
@@ -32,18 +24,19 @@ import './cabinet/accountsUI.js'; // Registers cabinetReady event listener
 const app = initializeApp(FIREBASE_CONFIG);
 const auth = getAuth(app);
 
-// ✅ FIXED: Initialize Firestore with Long Polling (no WebSocket)
+// Initialize Firestore with Long Polling (no WebSocket)
 const db = initializeFirestore(app, {
-  experimentalForceLongPolling: true,  // ✅ Disable WebSocket, use HTTP Long Polling
+  experimentalForceLongPolling: true,
   cacheSizeBytes: CACHE_SIZE_UNLIMITED
 });
 
 console.log('✅ Firebase initialized');
 console.log('🔌 Firestore: Long Polling mode (WebSocket disabled)');
 
-// ✅ Setup token management system
+// Setup token management system
 setupTokenInterceptor();
 setupPeriodicTokenCheck();
+setupBackgroundTokenRefresh(); // ✅ NEW: Background refresh
 console.log('🔒 Token auto-refresh system enabled');
 
 // Get Telegram WebApp
@@ -63,17 +56,32 @@ async function initMiniApp() {
   try {
     showLoadingScreen('Проверка авторизации...');
     
-    const chatId = tg?.initDataUnsafe?.user?.id;
+    const chatId = getCurrentChatId();
     const initData = tg?.initData;
     
     console.log('📱 Mini App started');
-    if (chatId) console.log('👤 Chat ID:', chatId);
+    if (chatId) {
+      console.log('👤 Chat ID:', chatId);
+      
+      // Debug: list all sessions
+      const allSessions = listAllSessions();
+      if (allSessions.length > 0) {
+        console.log('📋 Available sessions:', allSessions.map(s => `${s.chatId} (${s.email})`).join(', '));
+      }
+    }
     
-    // STEP 1: Check localStorage for existing session
-    const session = getSession();
+    // STEP 1: Check localStorage for existing session (current chatId)
+    let session = getSession(chatId);
     
     if (session) {
       console.log('🔍 Found session, validating...');
+      
+      // ✅ Ensure token is fresh before validation
+      const freshToken = await ensureFreshToken(chatId);
+      
+      if (freshToken) {
+        session.authToken = freshToken;
+      }
       
       const isValid = await validateToken(session.authToken, session.uid);
       
@@ -81,7 +89,7 @@ async function initMiniApp() {
         console.log('✅ Token valid, showing cabinet');
         return showCabinet({ uid: session.uid, email: session.email });
       } else {
-        console.log('⚠️ Token invalid, clearing');
+        console.log('⚠️ Token invalid, will try silent login');
       }
     }
     
@@ -89,6 +97,8 @@ async function initMiniApp() {
     if (chatId && initData) {
       console.log('🔍 Checking Telegram binding...');
       
+      // ✅ IMPORTANT: Don't fail on invalid initData hash
+      // Hash might be stale, but binding can still exist
       const binding = await checkTelegramBinding(chatId, initData);
       
       if (binding && binding.bound && binding.uid) {
@@ -99,22 +109,22 @@ async function initMiniApp() {
         if (loginResult && loginResult.success) {
           console.log('✅ Silent login successful');
           
-          // Exchange Custom Token for ID Token
+          // ✅ CRITICAL: Exchange Custom Token for ID Token
           try {
             console.log('🔄 Exchanging custom token for ID token...');
             
             const userCredential = await signInWithCustomToken(auth, loginResult.authToken);
-            const idToken = await userCredential.user.getIdToken();
+            const idToken = await userCredential.user.getIdToken(true); // force fresh
             
             console.log('✅ ID Token obtained');
             
             // Save session with ID Token
             saveSession({
               authToken: idToken,
-              tokenExpiry: loginResult.tokenExpiry,
+              tokenExpiry: Date.now() + (60 * 60 * 1000), // 1 hour
               uid: loginResult.uid,
               email: loginResult.email
-            });
+            }, chatId);
             
             return showCabinet({
               uid: loginResult.uid,
@@ -123,20 +133,25 @@ async function initMiniApp() {
           } catch (tokenError) {
             console.error('❌ Error exchanging custom token:', tokenError);
             
-            // Fallback: save as-is
+            // Fallback: try to use as-is (might fail)
             saveSession({
               authToken: loginResult.authToken,
               tokenExpiry: loginResult.tokenExpiry,
               uid: loginResult.uid,
               email: loginResult.email
-            });
+            }, chatId);
             
+            // Try to show cabinet anyway
             return showCabinet({
               uid: loginResult.uid,
               email: loginResult.email
             });
           }
+        } else {
+          console.log('⚠️ Silent login failed');
         }
+      } else {
+        console.log('ℹ️ No Telegram binding found');
       }
     }
     

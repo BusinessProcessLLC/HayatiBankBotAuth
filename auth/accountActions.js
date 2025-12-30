@@ -1,67 +1,58 @@
-/* /webapp/auth/accountActions.js v1.0.1 */
-// CHANGELOG v1.0.1:
-// - REMOVED: Unused firebaseDeleteUser import
-// - Backend handles Firebase Auth deletion
-// CHANGELOG v1.0.0:
-// - Initial release
-// - MOVED: From /js/account.js to /auth/ (modular)
-// - Renamed: account.js → accountActions.js
-// - FIXED: Import paths for new location
+/* /webapp/auth/accountActions.js v2.0.0 */
+// CHANGELOG v2.0.0:
+// - BREAKING: Multi-session support (per chatId)
+// - FIXED: Logout clears only current session
+// - ADDED: getCurrentChatId() usage
 // Account management (Logout, Delete Account)
 
 import { getAuth } from 'https://www.gstatic.com/firebasejs/12.7.0/firebase-auth.js';
-import { clearSession, getSession } from '../js/session.js';
+import { clearSession, getSession, getCurrentChatId } from '../js/session.js';
 import { showAuthScreen, showLoadingScreen } from '../js/ui.js';
 import { deleteUserAccount, deleteTelegramSession } from '../js/api.js';
 import { t } from './i18n.js';
 
 /**
- * Logout user
+ * Logout user (clear current chatId session only)
  */
 export async function logout() {
   try {
     console.log('👋 Logging out...');
     
-    // Get current session before clearing
-    const session = getSession();
+    const chatId = getCurrentChatId();
     
-    // FORCE clear session from localStorage
-    clearSession();
-    localStorage.removeItem('hayati_session'); // Double clear
+    // Get current session before clearing
+    const session = getSession(chatId);
+    
+    // Clear session from localStorage (only for current chatId)
+    clearSession(chatId);
     
     // Sign out from Firebase Auth
     const auth = getAuth();
     await auth.signOut();
     
     // Delete telegram_sessions from backend
-    if (session && session.uid) {
+    if (session && session.uid && chatId) {
       console.log('🗑️ Deleting telegram_sessions from backend...');
       
-      const tg = window.Telegram?.WebApp;
-      const chatId = tg?.initDataUnsafe?.user?.id;
-      
-      if (chatId) {
-        try {
-          await deleteTelegramSession(chatId, session.uid, session.authToken);
-          console.log('✅ telegram_sessions deleted');
-        } catch (err) {
-          console.warn('⚠️ Failed to delete telegram_sessions:', err);
-        }
+      try {
+        await deleteTelegramSession(chatId, session.uid, session.authToken);
+        console.log('✅ telegram_sessions deleted');
+      } catch (err) {
+        console.warn('⚠️ Failed to delete telegram_sessions:', err);
       }
     }
     
     console.log('✅ Logged out successfully');
-    console.log('🔍 localStorage after logout:', localStorage.getItem('hayati_session'));
+    console.log(`🔍 Remaining sessions: ${localStorage.length} keys`);
     
     // Show auth screen
     showAuthScreen('login');
     
   } catch (err) {
     console.error('❌ Error during logout:', err);
-    // Force clear and reload
-    clearSession();
-    localStorage.removeItem('hayati_session');
-    localStorage.clear(); // Nuclear option
+    // Force clear current session
+    const chatId = getCurrentChatId();
+    clearSession(chatId);
     location.reload();
   }
 }
@@ -74,7 +65,7 @@ export async function logout() {
  * - Telegram sessions cleanup
  * - Firebase Auth account deletion
  * 
- * Frontend only clears local session.
+ * Frontend clears ALL sessions for this user.
  */
 export async function deleteAccount() {
   try {
@@ -96,8 +87,10 @@ export async function deleteAccount() {
     
     showLoadingScreen(t('auth.delete.loading'));
     
+    const chatId = getCurrentChatId();
+    
     // Get current session
-    const session = getSession();
+    const session = getSession(chatId);
     if (!session) {
       alert(t('auth.error.noSession'));
       showAuthScreen('login');
@@ -118,9 +111,29 @@ export async function deleteAccount() {
     
     console.log('✅ Account deleted successfully');
     
-    // Clear local session
-    console.log('🗑️ Clearing local session...');
-    clearSession();
+    // Clear ALL sessions for this user (loop through localStorage)
+    console.log('🗑️ Clearing all sessions for this user...');
+    
+    const keysToRemove = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith('hayati_session_')) {
+        const sessionStr = localStorage.getItem(key);
+        if (sessionStr) {
+          const sess = JSON.parse(sessionStr);
+          if (sess.uid === uid) {
+            keysToRemove.push(key);
+          }
+        }
+      }
+    }
+    
+    keysToRemove.forEach(key => localStorage.removeItem(key));
+    console.log(`✅ Cleared ${keysToRemove.length} sessions`);
+    
+    // Also clear global session and current chat
+    localStorage.removeItem('hayati_session');
+    localStorage.removeItem('hayati_current_chat');
     
     // Success
     alert(t('auth.delete.success'));
@@ -136,8 +149,8 @@ export async function deleteAccount() {
     // Show error
     alert(t('auth.error.deleteFailed'));
     
-    // Clear session and show login
-    clearSession();
+    // Clear all sessions and show login
+    localStorage.clear();
     showAuthScreen('login');
     
     return false;

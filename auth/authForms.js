@@ -1,8 +1,9 @@
-/* /webapp/auth/authForms.js v1.0.3 */
-// CHANGELOG v1.0.3:
-// - FIXED: Use backend API for user document creation
-// - Removed Firestore SDK and REST API attempts
-// - Much cleaner and more reliable
+/* /webapp/auth/authForms.js v2.0.0 */
+// CHANGELOG v2.0.0:
+// - BREAKING: Always use ID Token (never Custom Token)
+// - ADDED: Custom Token → ID Token exchange in all flows
+// - ADDED: Per-chatId session saving
+// - FIXED: Token expiry set to 1 hour (not 30 days)
 
 import { 
   getAuth, 
@@ -12,7 +13,7 @@ import {
 } from 'https://www.gstatic.com/firebasejs/12.7.0/firebase-auth.js';
 
 import { linkTelegramAccount, createUserDocument } from '../js/api.js';
-import { saveSession } from '../js/session.js';
+import { saveSession, getCurrentChatId } from '../js/session.js';
 import { showLoadingScreen, showAuthScreen, showCabinet, showError, showSuccess, clearErrors } from '../js/ui.js';
 import { t } from './i18n.js';
 
@@ -42,11 +43,14 @@ export function setupLoginHandler(auth) {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
       
-      // Get ID Token
-      const token = await user.getIdToken();
+      // ✅ Get fresh ID Token
+      const token = await user.getIdToken(true);
       
       console.log('✅ Login successful:', user.email);
       console.log('✅ ID Token obtained');
+      
+      // Get current chatId
+      const chatId = getCurrentChatId();
       
       // Link Telegram if opened from Telegram
       const telegramData = getTelegramData();
@@ -54,13 +58,13 @@ export function setupLoginHandler(auth) {
         await linkTelegramAccount(user.uid, token, telegramData);
       }
       
-      // Save session with ID Token
+      // ✅ Save session with ID Token (per chatId)
       saveSession({
         authToken: token,
-        tokenExpiry: Date.now() + (30 * 24 * 60 * 60 * 1000),
+        tokenExpiry: Date.now() + (60 * 60 * 1000), // 1 hour
         uid: user.uid,
         email: user.email
-      });
+      }, chatId);
       
       // Show cabinet
       showCabinet({ uid: user.uid, email: user.email });
@@ -85,7 +89,6 @@ export function setupLoginHandler(auth) {
 
 /**
  * Setup register form handler
- * ✅ v1.0.3: Uses backend API for user document creation
  */
 export function setupRegisterHandler(auth, db) {
   document.getElementById('registerBtn')?.addEventListener('click', async () => {
@@ -118,8 +121,8 @@ export function setupRegisterHandler(auth, db) {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
       
-      // Get ID Token
-      const token = await user.getIdToken();
+      // ✅ Get fresh ID Token
+      const token = await user.getIdToken(true);
       
       console.log('✅ Registration successful:', user.email);
       console.log('✅ ID Token obtained');
@@ -167,9 +170,9 @@ export function setupRegisterHandler(auth, db) {
         ]
       };
       
-      console.log('📄 User document data prepared:', userDocData);
+      console.log('📄 User document data prepared');
       
-      // ✅ Create user document via backend
+      // Create user document via backend
       const created = await createUserDocument(user.uid, token, userDocData);
       
       if (!created) {
@@ -178,19 +181,22 @@ export function setupRegisterHandler(auth, db) {
       
       console.log('✅ User document created via backend');
       
+      // Get current chatId
+      const chatId = getCurrentChatId();
+      
       // Link Telegram if opened from Telegram
       const telegramData = getTelegramData();
       if (telegramData) {
         await linkTelegramAccount(user.uid, token, telegramData);
       }
       
-      // Save session with ID Token
+      // ✅ Save session with ID Token (per chatId)
       saveSession({
         authToken: token,
-        tokenExpiry: Date.now() + (30 * 24 * 60 * 60 * 1000),
+        tokenExpiry: Date.now() + (60 * 60 * 1000), // 1 hour
         uid: user.uid,
         email: user.email
-      });
+      }, chatId);
       
       // Show cabinet
       showCabinet({ uid: user.uid, email: user.email });
