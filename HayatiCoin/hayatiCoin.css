@@ -1,5 +1,8 @@
-/* /webapp/HayatiCoin/hayatiCoin.css v1.1.0 */
-/* CHANGELOG v1.1.0:
+ /* /webapp/HayatiCoin/hayatiCoin.css v1.2.0 */
+/* CHANGELOG v1.2.0:
+ * - CHANGED: Color to match RUB balance (neon-green #00ff9f)
+ * - ADDED: Same glow effect as RUB balance
+ * CHANGELOG v1.1.0:
  * - IMPROVED: Brighter gradient (purple/violet like in screenshot)
  * - ADDED: Text shadow for glow effect
  * - INCREASED: Font size to 20px
@@ -8,6 +11,17 @@
  * - Minimal gradient styling for HYC balance
  */
 
+.hyc-balance {
+  font-size: 22px;
+  font-weight: 700;
+  color: #00ff9f;
+  text-shadow: 0 0 10px rgba(0, 255, 159, 0.5);
+  margin: 8px 0;
+  text-align: center;
+  letter-spacing: 0.5px;
+}
+
+/*
 .hyc-balance {
   font-size: 20px;
   font-weight: 700;
@@ -21,7 +35,7 @@
   letter-spacing: 0.5px;
 }
 
-/* Dark theme support */
+Dark theme support
 @media (prefers-color-scheme: dark) {
   .hyc-balance {
     background: linear-gradient(135deg, #A855F7 0%, #EC4899 50%, #FBBF24 100%);
@@ -29,3 +43,4 @@
     -webkit-text-fill-color: transparent;
   }
 }
+*/
