@@ -1,10 +1,11 @@
-/* /webapp/js/ui.js v1.2.0 */
+/* /webapp/js/ui.js v2.0.0 */
+// CHANGELOG v2.0.0:
+// - ADDED: HYC balance display on cabinet open
+// - Import getHYCBalance and renderHYCBalance
 // CHANGELOG v1.2.0:
 // - REMOVED: Dynamic import of ../cabinet/accountsUI.js (circular dependency)
 // - ADDED: Event-based cabinet initialization
 // - FIXED: Core layer should not import Business layer
-// CHANGELOG v1.1.0:
-// - FIXED: Import path for cabinet module (now ../cabinet/)
 // UI management (screens, errors, buttons)
 
 import { getHYCBalance } from '../HayatiCoin/hycService.js';
@@ -68,7 +69,7 @@ export function showAuthScreen(mode = 'login') {
 /**
  * Show cabinet screen
  */
-export function showCabinet(userData) {
+export async function showCabinet(userData) {
   showScreen('cabinetScreen');
   
   // Display user email
@@ -79,18 +80,25 @@ export function showCabinet(userData) {
   
   console.log('✅ Cabinet opened for:', userData.email);
   
-  // ✅ NEW: Emit event for cabinet modules to initialize
+  // ✅ NEW: Fetch and display HYC balance
+  try {
+    const hycData = await getHYCBalance();
+    if (hycData && hycData.success) {
+      renderHYCBalance(hycData.balance);
+      console.log('✅ [HYC] Balance displayed:', hycData.balance);
+    }
+  } catch (err) {
+    console.warn('⚠️ [HYC] Failed to load balance:', err);
+    // Silent fail - no UI error
+  }
+  
+  // ✅ Emit event for cabinet modules to initialize
   // This allows cabinet module to handle its own initialization
   // without creating circular dependency (Core → Business)
   window.dispatchEvent(new CustomEvent('cabinetReady', { 
     detail: userData 
   }));
 }
-
-  const hycData = await getHYCBalance();
-  if (hycData) {
-    renderHYCBalance(hycData.balance);
-  }
 
 /**
  * Clear all error and success messages
