@@ -1,4 +1,7 @@
-/* /webapp/cabinet/accountsUI.js v1.4.0 */
+/* /webapp/cabinet/accountsUI.js v1.5.0 */
+// CHANGELOG v1.5.0:
+// - REMOVED: RUB balance from account cards
+// - Account cards now show only name and type
 // CHANGELOG v1.4.0:
 // - ADDED: Event listener for 'cabinetReady' event from ui.js
 // - FIXED: No longer relies on ui.js to auto-initialize
@@ -72,10 +75,10 @@ export async function renderAccountsList() {
 }
 
 /**
- * Render single account card
+ * Render single account card (WITHOUT BALANCE)
  */
 function renderAccountCard(account) {
-  const { accountId, type, profile, balance } = account;
+  const { accountId, type, profile } = account;
   
   // Type labels
   const typeLabels = {
@@ -95,13 +98,6 @@ function renderAccountCard(account) {
   } else if (type === 'government' && profile?.organizationName) {
     profileName = profile.organizationName;
   }
-  
-  // Balance display
-  const balanceRub = balance?.rub || 0;
-  const balanceFormatted = new Intl.NumberFormat('ru-RU', {
-    style: 'currency',
-    currency: 'RUB'
-  }).format(balanceRub);
   
   return `
     <div class="account-card" data-account-id="${accountId}">
@@ -135,10 +131,6 @@ function renderAccountCard(account) {
       
       <div class="account-body">
         <h3 class="account-name">${profileName}</h3>
-        <div class="account-balance">
-          <span class="balance-label">Баланс:</span>
-          <span class="balance-amount">${balanceFormatted}</span>
-        </div>
       </div>
       
       <div class="account-actions">

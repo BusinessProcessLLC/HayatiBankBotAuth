@@ -1,4 +1,7 @@
-/* /HayatiCoin/hycService.js v1.0.0 */
+/* /webapp/HayatiCoin/hycService.js v1.1.0 */
+// CHANGELOG v1.1.0:
+// - ADDED: Auto-refresh UI after successful claim/reward
+// - Import refreshHYCBalance from hycUI
 // CHANGELOG v1.0.0:
 // - Initial release
 // - API wrapper for HYC operations
@@ -40,6 +43,9 @@ export async function requestRegistrationReward(uid) {
     
     const result = await response.json();
     console.log('✅ [HYC] Registration reward granted:', result.amount);
+    
+    // ✅ NEW: Auto-refresh UI
+    await refreshHYCBalanceUI();
     
     return result;
   } catch (err) {
@@ -89,6 +95,9 @@ export async function claimHYC(type, accountId = null) {
     const result = await response.json();
     console.log('✅ [HYC] Claim successful:', result.amount);
     
+    // ✅ NEW: Auto-refresh UI
+    await refreshHYCBalanceUI();
+    
     return result;
   } catch (err) {
     console.error('❌ [HYC] Error claiming:', err);
@@ -136,4 +145,19 @@ export async function getHYCBalance() {
 export function formatHYC(amount) {
   if (!amount) return '0';
   return parseFloat(amount.toFixed(9)).toString();
+}
+
+/**
+ * Refresh HYC balance in UI
+ * Helper to avoid circular imports
+ */
+async function refreshHYCBalanceUI() {
+  try {
+    // Use global function if available
+    if (typeof window !== 'undefined' && window.refreshHYCBalance) {
+      await window.refreshHYCBalance();
+    }
+  } catch (err) {
+    console.warn('⚠️ [HYC] Could not refresh UI:', err);
+  }
 }
