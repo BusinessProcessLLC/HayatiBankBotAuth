@@ -19,6 +19,7 @@ import { showLoadingScreen, showAuthScreen, showCabinet } from './js/ui.js';
 import { setupTokenInterceptor, setupPeriodicTokenCheck, setupBackgroundTokenRefresh, ensureFreshToken } from './js/tokenManager.js';
 import './auth/accountActions.js'; // Imports logout & deleteAccount functions
 import './cabinet/accountsUI.js'; // Registers cabinetReady event listener
+import { claimHYC } from './HayatiCoin/hycService.js';
 
 // Initialize Firebase
 const app = initializeApp(FIREBASE_CONFIG);
@@ -163,6 +164,9 @@ async function initMiniApp() {
     console.error('❌ Error initializing Mini App:', err);
     showAuthScreen('login');
   }
+
+  await claimHYC('app_login');
+
 }
 
 // ======================

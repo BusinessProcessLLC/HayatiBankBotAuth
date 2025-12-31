@@ -84,6 +84,11 @@ export function showCabinet(userData) {
   }));
 }
 
+  const hycData = await getHYCBalance();
+  if (hycData) {
+    renderHYCBalance(hycData.balance);
+  }
+
 /**
  * Clear all error and success messages
  */

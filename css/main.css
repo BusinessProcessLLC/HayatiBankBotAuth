@@ -46,6 +46,7 @@
 @import "../offeringZone/offering-zone.css";   /* Offering Zone module */
 @import "../investments/investments.css";      /* Investment Level 1 module */
 @import "../businessTriangle/triangle.css";    /* Business Triangle module */
-@import "../20L/20L.css";                      /* 20L Lead Management System module */
+@import "../20L/20L.css"; 
+@import "../HayatiCoin/hayatiCoin.css";
 
 @import "./responsive.css";

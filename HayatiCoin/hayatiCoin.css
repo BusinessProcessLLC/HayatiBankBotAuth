@@ -1,0 +1,25 @@
+/* /HayatiCoin/hayatiCoin.css v1.0.0 */
+/* CHANGELOG v1.0.0:
+ * - Initial release
+ * - Minimal gradient styling for HYC balance
+ */
+
+.hyc-balance {
+  font-size: 20px;
+  font-weight: 700;
+  background: linear-gradient(135deg, #00F0FF, #FF006E);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin: 8px 0;
+  text-align: center;
+}
+
+/* Dark theme support */
+@media (prefers-color-scheme: dark) {
+  .hyc-balance {
+    background: linear-gradient(135deg, #00F0FF, #FF006E);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+}

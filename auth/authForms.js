@@ -16,6 +16,7 @@ import { linkTelegramAccount, createUserDocument } from '../js/api.js';
 import { saveSession, getCurrentChatId } from '../js/session.js';
 import { showLoadingScreen, showAuthScreen, showCabinet, showError, showSuccess, clearErrors } from '../js/ui.js';
 import { t } from './i18n.js';
+import { requestRegistrationReward } from '../HayatiCoin/hycService.js';
 
 // Get Telegram WebApp
 const tg = window.Telegram?.WebApp;
@@ -66,6 +67,9 @@ export function setupLoginHandler(auth) {
         email: user.email
       }, chatId);
       
+      // ✅ Request HYC registration reward
+      await requestRegistrationReward(user.uid);
+
       // Show cabinet
       showCabinet({ uid: user.uid, email: user.email });
       

@@ -25,11 +25,14 @@ import { getAccountById } from '../cabinet/accounts.js';
 import { showBusinessManagement } from '../businessTriangle/businessTriangle.js';
 import { renderFinancialReport } from '../finStatement/financialReport.js';
 import { renderLevel1 } from '../investments/level1.js';
+import { claimHYC } from '../HayatiCoin/hycService.js';
 
 /**
  * Show account dashboard with 7-step navigation
  */
 export async function showAccountDashboard(accountId) {
+
+  await claimHYC('dashboard_entry', accountId);
   try {
     console.log(`📊 Loading dashboard for account: ${accountId}`);
     
