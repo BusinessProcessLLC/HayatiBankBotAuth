@@ -13,4 +13,4 @@ export const FIREBASE_CONFIG = {
 };
 
 // API URL (your ngrok permanent domain)
-export const API_URL = 'https://octopus-noble-kangaroo.ngrok-free.app';
+export const API_URL = 'https://bot-production-4fe8.up.railway.app';
