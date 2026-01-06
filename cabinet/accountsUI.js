@@ -1,4 +1,8 @@
-/* /webapp/cabinet/accountsUI.js v1.5.0 */
+/* /webapp/cabinet/accountsUI.js v2.0.0 */
+// CHANGELOG v2.0.0:
+// - UPDATED: All buttons use new unified system
+// - REMOVED: Full-width buttons
+// - ADDED: Proper button hierarchy (Primary > Secondary > Ghost)
 // CHANGELOG v1.5.0:
 // - REMOVED: RUB balance from account cards
 // - Account cards now show only name and type
@@ -65,9 +69,11 @@ export async function renderAccountsList() {
       container.innerHTML = `
         <div class="error-message">
           <p>❌ Ошибка загрузки аккаунтов</p>
-          <button onclick="location.reload()" class="btn btn-secondary">
-            Обновить
-          </button>
+          <div class="btn-center">
+            <button onclick="location.reload()" class="btn btn-secondary">
+              Обновить
+            </button>
+          </div>
         </div>
       `;
     }
@@ -134,9 +140,8 @@ function renderAccountCard(account) {
       </div>
       
       <div class="account-actions">
-        <button class="btn btn-enter ferrari-style" data-action="enter" data-account-id="${accountId}">
-          <span class="btn-shine"></span>
-          <span class="btn-text">Войти</span>
+        <button class="btn btn-enter" data-action="enter" data-account-id="${accountId}">
+          <span class="btn-text">ВОЙТИ</span>
           <svg class="btn-arrow" width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
             <path d="M10 0l10 10-10 10-2-2 6-6H0V8h14l-6-6 2-2z"/>
           </svg>
@@ -256,7 +261,7 @@ function handleEnterAccount(accountId) {
 }
 
 /**
- * Show create account button
+ * Show create account button (NEW: unified cyberpunk style, horizontal on desktop)
  */
 export function showCreateAccountButton() {
   const actionsContainer = document.querySelector('.cabinet-actions');
@@ -266,23 +271,28 @@ export function showCreateAccountButton() {
     return;
   }
   
-  // Check if button already exists
+  // Check if already initialized
   if (actionsContainer.querySelector('.btn-create-account')) {
     return;
   }
   
-  // Add create account button
-  const createBtn = document.createElement('button');
-  createBtn.className = 'btn btn-primary btn-create-account';
-  createBtn.textContent = '➕ Создать аккаунт';
-  createBtn.onclick = showCreateAccountForm;
+  // Horizontal layout: [Создать] [Настройки] [Выйти]
+  actionsContainer.innerHTML = `
+    <button class="btn btn-primary btn-create-account">
+      ➕ Создать аккаунт
+    </button>
+    <button onclick="showProfileMenu()" class="btn btn-secondary">
+      ⚙️ Настройки
+    </button>
+    <button onclick="logout()" class="btn btn-ghost">
+      🚪 Выйти
+    </button>
+  `;
   
-  // Insert before logout button
-  const logoutBtn = actionsContainer.querySelector('[onclick="logout()"]');
-  if (logoutBtn) {
-    actionsContainer.insertBefore(createBtn, logoutBtn);
-  } else {
-    actionsContainer.prepend(createBtn);
+  // Attach create account listener
+  const createBtn = actionsContainer.querySelector('.btn-create-account');
+  if (createBtn) {
+    createBtn.onclick = showCreateAccountForm;
   }
 }
 
