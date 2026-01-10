@@ -1,199 +1,194 @@
-/* /webapp/app.js v2.0.1 */
-// CHANGELOG v2.0.1:
-// - ADDED: Language switcher import
-// - ADDED: Update page translations on load
-// CHANGELOG v2.0.0:
-// - BREAKING: Multi-session support
-// - ADDED: Custom Token → ID Token exchange in all flows
-// - ADDED: Background token refresh
-// - FIXED: initData hash validation bypass for existing sessions
-// Main entry point
+/* /webapp/app.js v3.0.3 */
+// CHANGELOG v3.0.3:
+// - FIXED: Explicit updatePage() call after i18n init with 50ms delay
+// - ADDED: Wait for DOM to be fully ready before first translation update
 
+// ==================== STEP 1: LOAD I18N FIRST ====================
+import './js/i18n-manager.js';
+import './js/components/languageSwitcher.js';
+
+// ==================== STEP 2: FIREBASE IMPORTS ====================
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js';
 import { getAuth, signInWithCustomToken } from 'https://www.gstatic.com/firebasejs/12.7.0/firebase-auth.js';
 import { initializeFirestore, CACHE_SIZE_UNLIMITED } from 'https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js';
 
-// Import modules
 import { FIREBASE_CONFIG } from './js/config.js';
 import { checkTelegramBinding, silentLogin, validateToken } from './js/api.js';
 import { setupLoginHandler, setupRegisterHandler, setupResetHandler, setupFormSwitching } from './auth/authForms.js';
 import { getSession, saveSession, getCurrentChatId, listAllSessions } from './js/session.js';
 import { showLoadingScreen, showAuthScreen, showCabinet } from './js/ui.js';
 import { setupTokenInterceptor, setupPeriodicTokenCheck, setupBackgroundTokenRefresh, ensureFreshToken } from './js/tokenManager.js';
-import { updatePageTranslations } from './js/utils/i18n.js';
-import './js/utils/languageSwitcher.js'; // ✅ Auto-creates language switcher
-import './auth/accountActions.js'; // Imports logout & deleteAccount functions
-import './cabinet/accountsUI.js'; // Registers cabinetReady event listener
+import './auth/accountActions.js';
+import './cabinet/accountsUI.js';
 import { claimHYC } from './HayatiCoin/hycService.js';
 
-// Initialize Firebase
-const app = initializeApp(FIREBASE_CONFIG);
-const auth = getAuth(app);
-
-// Initialize Firestore with Long Polling (no WebSocket)
-const db = initializeFirestore(app, {
-  experimentalForceLongPolling: true,
-  cacheSizeBytes: CACHE_SIZE_UNLIMITED
-});
-
-console.log('✅ Firebase initialized');
-console.log('🔌 Firestore: Long Polling mode (WebSocket disabled)');
-
-// Setup token management system
-setupTokenInterceptor();
-setupPeriodicTokenCheck();
-setupBackgroundTokenRefresh();
-console.log('🔒 Token auto-refresh system enabled');
-
-// Get Telegram WebApp
-const tg = window.Telegram?.WebApp;
-if (tg) {
-  tg.ready();
-  tg.expand();
-  console.log('✅ Telegram WebApp initialized');
-  console.log('📱 Telegram User:', tg.initDataUnsafe?.user);
-}
-
-// ======================
-// MAIN INITIALIZATION
-// ======================
-
-async function initMiniApp() {
+// ==================== INITIALIZATION ====================
+window.addEventListener('DOMContentLoaded', async () => {
+  console.log('🚀 [app.js] DOMContentLoaded - Starting initialization...');
+  
   try {
-    showLoadingScreen('Проверка авторизации...');
+    // ==================== STEP 1: I18N (CRITICAL FIRST) ====================
+    console.log('🌍 [app.js] Step 1/7: Initializing i18n...');
     
-    const chatId = getCurrentChatId();
-    const initData = tg?.initData;
-    
-    console.log('📱 Mini App started');
-    if (chatId) {
-      console.log('👤 Chat ID:', chatId);
-      
-      // Debug: list all sessions
-      const allSessions = listAllSessions();
-      if (allSessions.length > 0) {
-        console.log('📋 Available sessions:', allSessions.map(s => `${s.chatId} (${s.email})`).join(', '));
-      }
+    if (!window.i18n) {
+      throw new Error('i18n manager not found');
     }
     
-    // STEP 1: Check localStorage for existing session (current chatId)
-    let session = getSession(chatId);
+    await window.i18n.init();
+    console.log('✅ [app.js] i18n ready:', window.i18n.getCurrentLanguage());
+    console.log(`📚 [app.js] Loaded ${Object.keys(window.i18n.translations).length} translation keys`);
+    
+    // ✅ CRITICAL FIX: Wait for DOM to be fully ready before first update
+    console.log('⏳ [app.js] Waiting for DOM to be fully ready...');
+    await new Promise(resolve => setTimeout(resolve, 50));
+    
+    // ✅ NOW update page translations
+    window.i18n.updatePage();
+    console.log('✅ [app.js] Initial translations applied to page');
+    
+    // ==================== STEP 2: TELEGRAM SETUP ====================
+    console.log('📱 [app.js] Step 2/7: Setting up Telegram...');
+    
+    const tg = window.Telegram?.WebApp;
+    if (tg) {
+      tg.ready();
+      tg.expand();
+      
+      // Cyberpunk theme
+      tg.setHeaderColor('#0f172a');
+      tg.setBackgroundColor('#0f172a');
+      
+      console.log('✅ [app.js] Telegram WebApp initialized');
+      console.log('📱 Platform:', tg.platform);
+      console.log('👤 User:', tg.initDataUnsafe?.user);
+    } else {
+      console.log('ℹ️ Running in browser (not Telegram)');
+    }
+    
+    // ==================== STEP 3: FIREBASE INIT ====================
+    console.log('🔥 [app.js] Step 3/7: Initializing Firebase...');
+    
+    const app = initializeApp(FIREBASE_CONFIG);
+    const auth = getAuth(app);
+    const db = initializeFirestore(app, {
+      experimentalForceLongPolling: true,
+      cacheSizeBytes: CACHE_SIZE_UNLIMITED
+    });
+    
+    console.log('✅ Firebase initialized');
+    console.log('🔌 Firestore: Long Polling mode');
+    
+    // ==================== STEP 4: TOKEN MANAGEMENT ====================
+    console.log('🔒 [app.js] Step 4/7: Setting up token management...');
+    
+    setupTokenInterceptor();
+    setupPeriodicTokenCheck();
+    setupBackgroundTokenRefresh();
+    
+    console.log('✅ Token auto-refresh enabled');
+    
+    // ==================== STEP 5: AUTH HANDLERS ====================
+    console.log('🔐 [app.js] Step 5/7: Setting up auth handlers...');
+    
+    setupLoginHandler(auth);
+    setupRegisterHandler(auth, db);
+    setupResetHandler(auth);
+    setupFormSwitching();
+    
+    console.log('✅ Auth handlers registered');
+    
+    // ==================== STEP 6: SHOW LOADING SCREEN ====================
+    console.log('⏳ [app.js] Step 6/7: Showing loading screen...');
+    
+    showLoadingScreen(window.i18n.t('common.loading'));
+    
+    // ==================== STEP 7: SESSION CHECK ====================
+    console.log('🔍 [app.js] Step 7/7: Checking session...');
+    
+    const chatId = getCurrentChatId();
+    console.log('📱 ChatId:', chatId || 'none (browser)');
+    
+    const session = getSession(chatId);
     
     if (session) {
-      console.log('🔍 Found session, validating...');
+      console.log('✅ Session found:', {
+        email: session.email,
+        uid: session.uid,
+        expires: new Date(session.tokenExpiry).toLocaleString()
+      });
       
-      // ✅ Ensure token is fresh before validation
-      const freshToken = await ensureFreshToken(chatId);
-      
-      if (freshToken) {
-        session.authToken = freshToken;
-      }
-      
+      // Validate token
       const isValid = await validateToken(session.authToken, session.uid);
       
       if (isValid) {
-        console.log('✅ Token valid, showing cabinet');
-        return showCabinet({ uid: session.uid, email: session.email });
+        console.log('✅ Token valid, loading cabinet...');
+        
+        // Claim HYC for app login (silent)
+        await claimHYC('app_login');
+        
+        // ✅ NOW show cabinet (i18n is ready)
+        showCabinet({ uid: session.uid, email: session.email });
       } else {
-        console.log('⚠️ Token invalid, will try silent login');
+        console.log('⚠️ Token expired');
+        showAuthScreen('login');
       }
-    }
-    
-    // STEP 2: Check Telegram binding (if opened from Telegram)
-    if (chatId && initData) {
-      console.log('🔍 Checking Telegram binding...');
+    } else {
+      console.log('ℹ️ No session');
       
-      const binding = await checkTelegramBinding(chatId, initData);
-      
-      if (binding && binding.bound && binding.uid) {
-        console.log('✅ Found Telegram binding, attempting silent login...');
+      // Try Telegram auto-login
+      if (tg && tg.initDataUnsafe?.user) {
+        const tgChatId = tg.initDataUnsafe.user.id;
         
-        const loginResult = await silentLogin(binding.uid, chatId, initData);
+        console.log('🔍 Checking Telegram binding:', tgChatId);
         
-        if (loginResult && loginResult.success) {
-          console.log('✅ Silent login successful');
+        const binding = await checkTelegramBinding(tgChatId, tg.initData);
+        
+        if (binding && binding.bound) {
+          console.log('🔗 Telegram bound to:', binding.uid);
           
-          // ✅ CRITICAL: Exchange Custom Token for ID Token
-          try {
-            console.log('🔄 Exchanging custom token for ID token...');
+          const silentLoginResult = await silentLogin(binding.uid, tgChatId, tg.initData);
+          
+          if (silentLoginResult && silentLoginResult.success) {
+            console.log('✅ Silent login successful');
             
-            const userCredential = await signInWithCustomToken(auth, loginResult.authToken);
-            const idToken = await userCredential.user.getIdToken(true); // force fresh
+            const userCredential = await signInWithCustomToken(auth, silentLoginResult.customToken);
+            const user = userCredential.user;
+            const idToken = await user.getIdToken(true);
             
-            console.log('✅ ID Token obtained');
-            
-            // Save session with ID Token
             saveSession({
               authToken: idToken,
-              tokenExpiry: Date.now() + (60 * 60 * 1000), // 1 hour
-              uid: loginResult.uid,
-              email: loginResult.email
-            }, chatId);
+              tokenExpiry: Date.now() + (60 * 60 * 1000),
+              uid: user.uid,
+              email: user.email
+            }, tgChatId);
             
-            return showCabinet({
-              uid: loginResult.uid,
-              email: loginResult.email
-            });
-          } catch (tokenError) {
-            console.error('❌ Error exchanging custom token:', tokenError);
+            // Claim HYC for app login (silent)
+            await claimHYC('app_login');
             
-            // Fallback: try to use as-is (might fail)
-            saveSession({
-              authToken: loginResult.authToken,
-              tokenExpiry: loginResult.tokenExpiry,
-              uid: loginResult.uid,
-              email: loginResult.email
-            }, chatId);
-            
-            // Try to show cabinet anyway
-            return showCabinet({
-              uid: loginResult.uid,
-              email: loginResult.email
-            });
+            showCabinet({ uid: user.uid, email: user.email });
+          } else {
+            console.log('⚠️ Silent login failed');
+            showAuthScreen('login');
           }
         } else {
-          console.log('⚠️ Silent login failed');
+          console.log('ℹ️ Telegram not bound');
+          showAuthScreen('login');
         }
       } else {
-        console.log('ℹ️ No Telegram binding found');
+        console.log('ℹ️ Not in Telegram');
+        showAuthScreen('login');
       }
     }
     
-    // STEP 3: No session and no binding - show auth screen
-    console.log('🔓 No session found, showing auth screen');
-    showAuthScreen('login');
-    
-    // ✅ Update page translations after showing auth screen
-    updatePageTranslations();
+    console.log('✅✅✅ App initialization complete!');
     
   } catch (err) {
-    console.error('❌ Error initializing Mini App:', err);
+    console.error('❌❌❌ CRITICAL ERROR during initialization:', err);
+    
+    // Show error to user
+    alert(`Initialization failed: ${err.message}\n\nPlease refresh the page.`);
+    
+    // Show login as fallback
     showAuthScreen('login');
-    updatePageTranslations();
   }
-
-  await claimHYC('app_login');
-}
-
-// ======================
-// SETUP EVENT HANDLERS
-// ======================
-
-window.addEventListener('DOMContentLoaded', () => {
-  console.log('🚀 Mini App DOM loaded');
-  
-  // Setup auth form handlers
-  setupLoginHandler(auth);
-  setupRegisterHandler(auth, db);
-  setupResetHandler(auth);
-  setupFormSwitching();
-  
-  // ✅ Listen for language changes
-  window.addEventListener('languageChanged', (e) => {
-    console.log('🌍 Language changed to:', e.detail.language);
-    updatePageTranslations();
-  });
-  
-  // Initialize app
-  initMiniApp();
 });
