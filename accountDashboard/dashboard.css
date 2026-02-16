@@ -229,3 +229,37 @@
     font-size: 9px;
   }
 }
+
+/* ==================== VISUAL POLISH ==================== */
+
+.account-dashboard {
+  background: linear-gradient(160deg, rgba(15, 23, 42, 0.82), rgba(2, 6, 23, 0.92));
+  border: 1px solid rgba(0, 240, 255, 0.18);
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 18px 42px rgba(2, 6, 23, 0.45);
+  backdrop-filter: blur(10px);
+}
+
+.dashboard-nav {
+  padding: 8px;
+  border: 1px solid rgba(0, 240, 255, 0.15);
+  border-radius: 14px;
+  background: rgba(15, 23, 42, 0.55);
+}
+
+.nav-step {
+  border-radius: 10px;
+}
+
+.nav-step.active {
+  background: linear-gradient(135deg, rgba(0, 240, 255, 0.24), rgba(14, 165, 233, 0.12));
+  box-shadow: 0 0 24px rgba(0, 240, 255, 0.2), inset 0 0 0 1px rgba(0, 240, 255, 0.2);
+}
+
+.dashboard-content {
+  border: 1px solid rgba(0, 240, 255, 0.14);
+  border-radius: 14px;
+  background: rgba(2, 6, 23, 0.52);
+  padding: 16px;
+}

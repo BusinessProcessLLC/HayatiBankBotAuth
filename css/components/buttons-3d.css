@@ -161,6 +161,42 @@
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
+/* ==================== AUTH PRIME VARIANT ==================== */
+
+.btn-3d.btn-auth-prime {
+  background: linear-gradient(145deg, #0b1220 0%, #0f1a2f 100%);
+  border: 1px solid rgba(0, 240, 255, 0.35);
+  color: #e6f7ff;
+  box-shadow:
+    0 4px 0 0 #0a1426,
+    0 10px 20px rgba(0, 0, 0, 0.42),
+    0 0 18px rgba(0, 240, 255, 0.14),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.btn-3d.btn-auth-prime:hover {
+  transform: translateY(-1px);
+  border-color: rgba(0, 240, 255, 0.55);
+  box-shadow:
+    0 5px 0 0 #0a1426,
+    0 14px 28px rgba(0, 0, 0, 0.5),
+    0 0 24px rgba(0, 240, 255, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+.btn-3d.btn-auth-prime:active {
+  transform: translateY(1px);
+  box-shadow:
+    0 2px 0 0 #0a1426,
+    0 8px 16px rgba(0, 0, 0, 0.36),
+    0 0 14px rgba(0, 240, 255, 0.15);
+}
+
+.btn-3d.btn-auth-prime.loading::after {
+  border-color: rgba(0, 240, 255, 0.24);
+  border-top-color: #a9fbff;
+}
+
 /* ==================== SIZES ==================== */
 
 .btn-3d-small {
@@ -219,13 +255,15 @@
   position: relative;
 }
 
-.btn-3d.loading span {
+.btn-3d.loading > * {
   opacity: 0;
 }
 
 .btn-3d.loading::after {
   content: '';
   position: absolute;
+  top: 50%;
+  left: 50%;
   width: 20px;
   height: 20px;
   border: 3px solid rgba(255, 255, 255, 0.3);
@@ -247,7 +285,8 @@
 /* ==================== ANIMATIONS ==================== */
 
 @keyframes btn-spin {
-  to { transform: rotate(360deg); }
+  from { transform: translate(-50%, -50%) rotate(0deg); }
+  to { transform: translate(-50%, -50%) rotate(360deg); }
 }
 
 @keyframes btn-bounce {

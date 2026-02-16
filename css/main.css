@@ -38,6 +38,7 @@
 @import "./components/languageSwitcher.css";  /* ✅ NEW: Language switcher */
 @import "./components/hayati-id.css";
 @import "./components/home-button.css";
+@import "./components/invest-topbar.css";
 
 /* ==================== SCREENS ==================== */
 @import "./screens/loading.css";
@@ -55,6 +56,11 @@
 
 /* ==================== RESPONSIVE ==================== */
 @import "./responsive.css";
+
+/* Hide translatable text until i18n is applied to prevent mojibake flash */
+body.i18n-pending [data-i18n]:not(input):not(textarea) {
+  color: transparent !important;
+}
 
 /* ==================== MIGRATION NOTES ==================== */
 /*

@@ -1,5 +1,8 @@
 {
-  "app.title": "🏦 FD \"Hayati\" — Sign In",
+  "app.title": "🏦 FH of Hayati — Sign In",
+  "app.title.loading": "🏦 FH of Hayati — Loading",
+  "app.title.cabinet": "🏦 FH of Hayati — Cabinet",
+  "app.brand": "FH of Hayati",
   "app.subtitle": "Capital Management",
   "app.cabinetWelcome": "🎉 Welcome!",
   "app.cabinetDescription": "Here will be your cabinet with balance, payments and capital management.",
@@ -36,7 +39,7 @@
   "auth.logout.loading": "Logging out...",
   "auth.logout.success": "✅ Successfully logged out",
 
-  "auth.delete.button": "🗑️ Delete from FD \"Hayati\"",
+  "auth.delete.button": "🗑️ Delete from FH of Hayati",
   "auth.delete.confirm.title": "⚠️ WARNING!",
   "auth.delete.confirm.question": "Are you sure you want to delete your account?",
   "auth.delete.confirm.warning": "This action will:",
@@ -516,8 +519,8 @@
   "settings.language.currency": "Currency",
   "settings.language.timezone": "Timezone",
   "settings.dangerZone.title": "⚠️ Danger Zone",
-  "settings.dangerZone.warning": "Deleting your account will permanently remove all your data from FD \"Hayati\" system",
-  "settings.dangerZone.deleteButton": "🗑️ Delete from FD \"Hayati\"",
+  "settings.dangerZone.warning": "Deleting your account will permanently remove all your data from FH of Hayati system",
+  "settings.dangerZone.deleteButton": "🗑️ Delete from FH of Hayati",
   "settings.inDevelopment": "🚧 In Development",
 
   "common.loading": "Loading...",
@@ -526,6 +529,7 @@
   "common.delete": "Delete",
   "common.edit": "Edit",
   "common.back": "Back",
+  "common.backHome": "Back Home",
   "common.next": "Next",
   "common.close": "Close",
   "common.yes": "Yes",

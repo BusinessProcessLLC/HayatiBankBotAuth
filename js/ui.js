@@ -1,21 +1,13 @@
-/* /webapp/js/ui.js v2.1.0 */
-// CHANGELOG v2.1.0:
-// - ADDED: Hayati ID display in cabinet
-// - Import renderHayatiIdInCabinet component
-// CHANGELOG v2.0.0:
-// - ADDED: HYC balance display on cabinet open
-// - Import getHYCBalance and renderHYCBalance
-// CHANGELOG v1.2.0:
-// - REMOVED: Dynamic import of ../cabinet/accountsUI.js (circular dependency)
-// - ADDED: Event-based cabinet initialization
-// - FIXED: Core layer should not import Business layer
-// UI management (screens, errors, buttons)
+/* /webapp/js/ui.js v2.2.0 */
+// CHANGELOG v2.2.0:
+// - FIXED: Document title now reflects loading/auth/cabinet screens
+// - FIXED: Title updates on language change while staying on current screen
+// - KEPT: Existing screen/error/success APIs
 
 import { getHYCBalance } from '../HayatiCoin/hycService.js';
 import { renderHYCBalance } from '../HayatiCoin/hycUI.js';
 import { renderHayatiIdInCabinet } from './components/hayatiIdDisplay.js';
 
-// DOM Elements
 const loadingScreen = document.getElementById('loadingScreen');
 const authScreen = document.getElementById('authScreen');
 const cabinetScreen = document.getElementById('cabinetScreen');
@@ -24,41 +16,53 @@ const loginForm = document.getElementById('loginForm');
 const registerForm = document.getElementById('registerForm');
 const resetForm = document.getElementById('resetForm');
 
-/**
- * Show specific screen
- */
+function t(key, fallback) {
+  try {
+    return window.i18n?.t?.(key) || fallback;
+  } catch (_error) {
+    return fallback;
+  }
+}
+
+function setDocumentTitle(mode = 'auth') {
+  if (mode === 'cabinet') {
+    document.title = t('app.title.cabinet', 'FH of Hayati - Cabinet');
+    return;
+  }
+  if (mode === 'loading') {
+    document.title = t('app.title.loading', 'FH of Hayati - Loading');
+    return;
+  }
+  document.title = t('app.title', 'FH of Hayati - Sign In');
+}
+
 export function showScreen(screenId) {
-  [loadingScreen, authScreen, cabinetScreen].forEach(screen => {
+  [loadingScreen, authScreen, cabinetScreen].forEach((screen) => {
     if (screen) screen.classList.add('hidden');
   });
-  
+
   const targetScreen = document.getElementById(screenId);
   if (targetScreen) {
     targetScreen.classList.remove('hidden');
   }
 }
 
-/**
- * Show loading screen
- */
-export function showLoadingScreen(message = 'Загрузка...') {
+export function showLoadingScreen(message = 'Loading...') {
   showScreen('loadingScreen');
+  setDocumentTitle('loading');
+
   const loadingText = loadingScreen?.querySelector('p');
   if (loadingText) loadingText.textContent = message;
 }
 
-/**
- * Show authentication screen
- */
 export function showAuthScreen(mode = 'login') {
   showScreen('authScreen');
-  
-  // Hide all forms
+  setDocumentTitle('auth');
+
   if (loginForm) loginForm.classList.add('hidden');
   if (registerForm) registerForm.classList.add('hidden');
   if (resetForm) resetForm.classList.add('hidden');
-  
-  // Show appropriate form
+
   if (mode === 'login' && loginForm) {
     loginForm.classList.remove('hidden');
   } else if (mode === 'register' && registerForm) {
@@ -66,82 +70,77 @@ export function showAuthScreen(mode = 'login') {
   } else if (mode === 'reset' && resetForm) {
     resetForm.classList.remove('hidden');
   }
-  
+
   clearErrors();
 }
 
-/**
- * Show cabinet screen
- */
 export async function showCabinet(userData) {
   showScreen('cabinetScreen');
-  
-  // Display user email
+  setDocumentTitle('cabinet');
+
   const userEmailEl = document.querySelector('.user-email');
   if (userEmailEl) {
     userEmailEl.textContent = userData.email || 'Unknown';
   }
-  
-  console.log('✅ Cabinet opened for:', userData.email);
-  
-  // ✅ NEW: Render Hayati ID (before HYC, as it's more important)
+
+  console.log('[ui] cabinet opened for:', userData.email);
+
   try {
     renderHayatiIdInCabinet(userData);
   } catch (err) {
-    console.warn('⚠️ [Hayati ID] Failed to render:', err);
-    // Silent fail - no UI error
+    console.warn('[ui] Hayati ID render failed:', err);
   }
-  
-  // ✅ Fetch and display HYC balance
+
   try {
     const hycData = await getHYCBalance();
     if (hycData && hycData.success) {
       renderHYCBalance(hycData.balance);
-      console.log('✅ [HYC] Balance displayed:', hycData.balance);
+      console.log('[ui] HYC balance displayed:', hycData.balance);
     }
   } catch (err) {
-    console.warn('⚠️ [HYC] Failed to load balance:', err);
-    // Silent fail - no UI error
+    console.warn('[ui] HYC balance load failed:', err);
   }
-  
-  // ✅ Emit event for cabinet modules to initialize
-  // This allows cabinet module to handle its own initialization
-  // without creating circular dependency (Core → Business)
-  window.dispatchEvent(new CustomEvent('cabinetReady', { 
-    detail: userData 
+
+  window.dispatchEvent(new CustomEvent('cabinetReady', {
+    detail: userData
   }));
 }
 
-/**
- * Clear all error and success messages
- */
 export function clearErrors() {
-  document.querySelectorAll('.error, .success').forEach(el => {
+  document.querySelectorAll('.error, .success').forEach((el) => {
     el.classList.add('hidden');
     el.textContent = '';
   });
 }
 
-/**
- * Show error message
- */
 export function showError(elementId, message) {
   const el = document.getElementById(elementId);
   if (el) {
     el.textContent = message;
     el.classList.remove('hidden');
   }
-  console.error(`❌ ${elementId}:`, message);
+  console.error(`[ui] ${elementId}:`, message);
 }
 
-/**
- * Show success message
- */
 export function showSuccess(elementId, message) {
   const el = document.getElementById(elementId);
   if (el) {
     el.textContent = message;
     el.classList.remove('hidden');
   }
-  console.log(`✅ ${elementId}:`, message);
+  console.log(`[ui] ${elementId}:`, message);
+}
+
+if (typeof window !== 'undefined') {
+  window.addEventListener('languageChanged', () => {
+    if (cabinetScreen && !cabinetScreen.classList.contains('hidden')) {
+      setDocumentTitle('cabinet');
+      return;
+    }
+    if (loadingScreen && !loadingScreen.classList.contains('hidden')) {
+      setDocumentTitle('loading');
+      return;
+    }
+    setDocumentTitle('auth');
+  });
 }

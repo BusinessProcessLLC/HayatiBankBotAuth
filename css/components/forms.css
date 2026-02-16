@@ -47,6 +47,20 @@
   color: rgba(148, 163, 184, 0.5);
 }
 
+/* Keep login/register inputs visually consistent (browser autofill included) */
+#authScreen .form-card .input-group input {
+  color: #f1f5f9;
+  caret-color: #f1f5f9;
+}
+
+#authScreen .form-card .input-group input:-webkit-autofill,
+#authScreen .form-card .input-group input:-webkit-autofill:hover,
+#authScreen .form-card .input-group input:-webkit-autofill:focus {
+  -webkit-text-fill-color: #f1f5f9;
+  transition: background-color 5000s ease-in-out 0s;
+  box-shadow: 0 0 0px 1000px rgba(15, 23, 42, 0.9) inset;
+}
+
 /* 🆕 NEW: Password Input Wrapper */
 .password-input-wrapper {
   position: relative;
@@ -94,7 +108,8 @@
 
 /* 🆕 FIXED: Compact form width */
 .form-card {
-  max-width: 500px;
+  width: min(680px, 94vw);
+  max-width: 680px;
   margin: 0 auto;
 }
 

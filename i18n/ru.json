@@ -1,5 +1,8 @@
 {
   "app.title": "🏦 ФД «Хаяти» — Вход",
+  "app.title.loading": "🏦 ФД «Хаяти» — Загрузка",
+  "app.title.cabinet": "🏦 ФД «Хаяти» — Кабинет",
+  "app.brand": "ФД «Хаяти»",
   "app.subtitle": "Управление капиталом",
   "app.cabinetWelcome": "🎉 Добро пожаловать!",
   "app.cabinetDescription": "Здесь будет ваш кабинет с балансом, платежами и управлением капиталом.",
@@ -524,6 +527,7 @@
   "common.delete": "Удалить",
   "common.edit": "Редактировать",
   "common.back": "Назад",
+  "common.backHome": "На главную",
   "common.next": "Далее",
   "common.close": "Закрыть",
   "common.yes": "Да",

@@ -108,7 +108,7 @@
   transition: all 0.2s;
 }
 
-/* Group Header Row (A. Найм, C. Активы, etc) */
+/* Group Header Row */
 .report-row.group-header-row {
   background: rgba(0, 240, 255, 0.15);
   font-weight: 700;
@@ -137,7 +137,7 @@
   font-size: 14px;
 }
 
-/* Group Total Row (B. Найм итого) */
+/* Group Total Row */
 .report-row.group-total-row {
   background: rgba(0, 240, 255, 0.1);
   font-weight: 600;
@@ -152,7 +152,7 @@
   text-shadow: 0 0 8px rgba(0, 240, 255, 0.4);
 }
 
-/* Grand Total Row (G. ДОХОДЫ ИТОГО, L. РАСХОДЫ ИТОГО) */
+/* Grand Total Row (G. Р”РћРҐРћР”Р« РРўРћР“Рћ, L. Р РђРЎРҐРћР”Р« РРўРћР“Рћ) */
 .report-row.grand-total-row {
   background: rgba(0, 240, 255, 0.2);
   font-weight: 700;
@@ -213,7 +213,7 @@
   text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
 }
 
-/* Cash Flow row (M. ЧИСТЫЙ ДЕНЕЖНЫЙ ПОТОК) - inside expenses section */
+/* Cash Flow row (M. Р§РРЎРўР«Р™ Р”Р•РќР•Р–РќР«Р™ РџРћРўРћРљ) - inside expenses section */
 .cash-flow-row {
   font-size: 18px;
   padding: 16px;
@@ -242,7 +242,7 @@
   text-shadow: 0 0 15px rgba(220, 38, 38, 0.6) !important;
 }
 
-/* Net Worth rows (V. СОСТОЯНИЕ по банкиру, W. СОСТОЯНИЕ факт) */
+/* Net Worth rows */
 .net-worth-row {
   font-size: 18px;
   padding: 16px;
@@ -392,7 +392,7 @@
 }
 
 .editable-row::before {
-  content: '✏️';
+  content: 'Edit';
   position: absolute;
   left: 8px;
   opacity: 0;
@@ -466,4 +466,38 @@
   .grand-total-amount {
     font-size: 16px;
   }
+}
+
+/* ==================== VISUAL POLISH ==================== */
+
+.financial-report {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.year-selector {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: linear-gradient(160deg, rgba(15, 23, 42, 0.86), rgba(2, 6, 23, 0.9));
+  border: 1px solid rgba(0, 240, 255, 0.2);
+  border-radius: 12px;
+  padding: 14px;
+  box-shadow: 0 10px 28px rgba(2, 6, 23, 0.35);
+}
+
+.year-btn {
+  backdrop-filter: blur(8px);
+}
+
+.report-section {
+  background: linear-gradient(160deg, rgba(15, 23, 42, 0.74), rgba(2, 6, 23, 0.82));
+  border: 1px solid rgba(0, 240, 255, 0.14);
+  box-shadow: 0 14px 32px rgba(2, 6, 23, 0.32);
+}
+
+.report-row {
+  border: 1px solid rgba(0, 240, 255, 0.06);
+  border-radius: 8px;
 }

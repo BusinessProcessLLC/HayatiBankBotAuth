@@ -29,6 +29,7 @@
 // ==================== STEP 1: LOAD I18N FIRST ====================
 import './js/i18n-manager.js';
 import './js/components/languageSwitcher.js';
+import './js/components/investTopbarControls.js';
 
 // ==================== STEP 2: FIREBASE IMPORTS ====================
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js';
@@ -43,6 +44,7 @@ import { showLoadingScreen, showAuthScreen, showCabinet } from './js/ui.js';
 import { setupTokenInterceptor, setupPeriodicTokenCheck, setupBackgroundTokenRefresh, ensureFreshToken } from './js/tokenManager.js';
 import { getUserData } from './js/userService.js'; // ✅ NEW
 import { setupSessionMonitor, setupVisibilityMonitor } from './js/sessionMonitor.js'; // ✅ NEW
+import { setupPreferencesCloudSync } from './js/settings/preferencesCloudSync.js';
 import './auth/accountActions.js';
 import './cabinet/accountsUI.js';
 import { claimHYC } from './HayatiCoin/hycService.js';
@@ -133,6 +135,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     setupBackgroundTokenRefresh();
     setupSessionMonitor(); // ✅ NEW: Monitor session expiry
     setupVisibilityMonitor(); // ✅ NEW: Check session on page visible
+    setupPreferencesCloudSync(auth);
     
     console.log('✅ Token auto-refresh enabled');
     console.log('✅ Session monitoring enabled');

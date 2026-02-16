@@ -32,16 +32,19 @@ import { getUserData } from '../js/userService.js'; // ✅ NEW
 
 // Get Telegram WebApp
 const tg = window.Telegram?.WebApp;
+let loginInProgress = false;
 
 /**
  * Setup login form handler
  */
 export function setupLoginHandler(auth) {
   document.getElementById('loginBtn')?.addEventListener('click', async () => {
+    if (loginInProgress) return;
     const t = window.i18n.t.bind(window.i18n);
     
     const email = document.getElementById('loginEmail')?.value.trim();
     const password = document.getElementById('loginPassword')?.value;
+    const loginBtn = document.getElementById('loginBtn');
     
     clearErrors();
     
@@ -51,8 +54,12 @@ export function setupLoginHandler(auth) {
     }
     
     try {
-      const loginBtn = document.getElementById('loginBtn');
-      loginBtn.disabled = true;
+      loginInProgress = true;
+      if (loginBtn) {
+        loginBtn.disabled = true;
+        loginBtn.classList.add('loading');
+        loginBtn.setAttribute('aria-busy', 'true');
+      }
       showLoadingScreen(t('common.loading'));
       
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
@@ -97,7 +104,11 @@ export function setupLoginHandler(auth) {
       showCabinet(userData || { uid: user.uid, email: user.email });
       
     } catch (error) {
-      document.getElementById('loginBtn').disabled = false;
+      if (loginBtn) {
+        loginBtn.disabled = false;
+        loginBtn.classList.remove('loading');
+        loginBtn.setAttribute('aria-busy', 'false');
+      }
       
       let errorMessage = t('auth.error.loginFailed');
       if (error.code === 'auth/invalid-credential') {
@@ -110,6 +121,13 @@ export function setupLoginHandler(auth) {
       
       showAuthScreen('login');
       showError('loginError', errorMessage);
+    } finally {
+      loginInProgress = false;
+      if (loginBtn) {
+        loginBtn.disabled = false;
+        loginBtn.classList.remove('loading');
+        loginBtn.setAttribute('aria-busy', 'false');
+      }
     }
   });
 }

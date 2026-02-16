@@ -1,4 +1,19 @@
 #loadingScreen {
-  text-align: center;
-  padding: 40px;
+  width: 100%;
+  min-height: calc(100vh - 140px);
+  padding: 40px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#loadingScreen .loading-center {
+  width: 100%;
+  max-width: 120px;
+  display: grid;
+  justify-items: center;
+}
+
+#loadingScreen .spinner {
+  margin: 0 !important;
 }

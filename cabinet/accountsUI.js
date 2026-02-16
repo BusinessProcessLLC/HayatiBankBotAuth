@@ -189,7 +189,7 @@ function attachAccountListeners() {
   });
   
   document.querySelectorAll('[data-action="enter"]').forEach(btn => {
-    btn.addEventListener('click', () => handleEnterAccount(btn.dataset.accountId));
+    btn.addEventListener('click', () => handleEnterAccount(btn.dataset.accountId, btn));
   });
   
   document.addEventListener('click', (e) => {
@@ -223,14 +223,27 @@ async function handleDeleteAccount(accountId) {
   }
 }
 
-function handleEnterAccount(accountId) {
-  console.log(`🚀 Entering account: ${accountId}`);
-  
+function handleEnterAccount(accountId, buttonEl) {
+  if (buttonEl?.classList.contains('loading')) return;
+
+  if (buttonEl) {
+    buttonEl.disabled = true;
+    buttonEl.classList.add('loading');
+    buttonEl.setAttribute('aria-busy', 'true');
+  }
+
+  console.log(`[accounts] entering account: ${accountId}`);
+
   import('../accountDashboard/accountNavigation.js').then(module => {
     module.showAccountDashboard(accountId);
   }).catch(err => {
+    if (buttonEl) {
+      buttonEl.disabled = false;
+      buttonEl.classList.remove('loading');
+      buttonEl.setAttribute('aria-busy', 'false');
+    }
     const t = window.i18n.t.bind(window.i18n);
-    console.error('❌ Error loading account navigation:', err);
+    console.error('[accounts] error loading account navigation:', err);
     alert(t('cabinet.errorLoadingAccounts'));
   });
 }
@@ -267,7 +280,7 @@ export async function showCreateAccountButton() {
       <button class="btn btn-primary btn-create-account">
         <span data-i18n="cabinet.createAccount">${t('cabinet.createAccount')}</span>
       </button>
-      <button onclick="showProfileMenu()" class="btn btn-secondary">
+      <button onclick="showProfileMenu()" class="btn btn-ghost">
         <span data-i18n="cabinet.settings">${t('cabinet.settings')}</span>
       </button>
       <button onclick="logout()" class="btn btn-ghost">
@@ -282,7 +295,7 @@ export async function showCreateAccountButton() {
   } else {
     // ✅ No create button, just settings and logout
     actionsContainer.innerHTML = `
-      <button onclick="showProfileMenu()" class="btn btn-secondary">
+      <button onclick="showProfileMenu()" class="btn btn-ghost">
         <span data-i18n="cabinet.settings">${t('cabinet.settings')}</span>
       </button>
       <button onclick="logout()" class="btn btn-ghost">
@@ -298,6 +311,21 @@ if (typeof window !== 'undefined') {
   window.addEventListener('cabinetReady', async (event) => {
     console.log('📋 Cabinet ready:', event.detail);
     showCreateAccountButton();
+    await renderAccountsList();
+  });
+}
+
+if (typeof window !== 'undefined') {
+  window.addEventListener('languageChanged', async () => {
+    const cabinetScreen = document.getElementById('cabinetScreen');
+    if (!cabinetScreen || cabinetScreen.classList.contains('hidden')) return;
+
+    if (document.querySelector('.create-account-form')) {
+      await showCreateAccountForm();
+      return;
+    }
+
+    await showCreateAccountButton();
     await renderAccountsList();
   });
 }
