@@ -1,4 +1,4 @@
-// webapp/js/config.js
+﻿// webapp/js/config.js
 // Firebase configuration and API URL
 
 export const FIREBASE_CONFIG = {
@@ -12,7 +12,8 @@ export const FIREBASE_CONFIG = {
   measurementId: "G-BYXEPGS2LM"
 };
 
-// API URL (your ngrok permanent domain)
-// export const API_URL = 'https://bot-test-production-a462.up.railway.app';
+// Main backend API
 export const API_URL = 'https://bot-production-4fe8.up.railway.app';
-// export const API_URL = 'http://localhost:8080'; // ← временно
+
+// Canonical preferences sync endpoint (shared across apps)
+export const PREFERENCES_API_URL = 'https://invest.hayatibank.ru/api/preferences';

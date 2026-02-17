@@ -1,13 +1,5 @@
-import { getApp } from 'https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js';
-import {
-  getFirestore,
-  doc,
-  getDoc,
-  setDoc,
-  onSnapshot,
-  serverTimestamp
-} from 'https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js';
-import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.7.0/firebase-auth.js';
+﻿import { PREFERENCES_API_URL } from '../config.js';
+import { getSession } from '../session.js';
 
 const PREFS_STORAGE_KEY = 'hayati_prefs_v1';
 const PREFS_CHANGED_EVENT = 'hayatiPrefsChanged';
@@ -20,12 +12,15 @@ const DEFAULT_PREFS = {
   updatedAtMs: 0
 };
 
+const PREFS_API_CANDIDATES = [
+  window.HAYATI_PREFS_API_URL,
+  PREFERENCES_API_URL
+].filter(Boolean);
+
 let initialized = false;
-let activeUid = null;
 let isApplyingRemote = false;
-let unsubscribeRemote = null;
 let pushTimer = null;
-let warnedNoFirebaseAuth = false;
+let pollTimer = null;
 
 function normalizePrefs(raw = {}) {
   return {
@@ -56,45 +51,90 @@ function writeLocalPrefs(prefs, source = 'cloud') {
   const next = normalizePrefs(prefs);
   localStorage.setItem(PREFS_STORAGE_KEY, JSON.stringify(next));
   localStorage.setItem('hayati_lang', next.language);
+  localStorage.setItem('hb_lang', next.language);
   window.dispatchEvent(new CustomEvent(PREFS_CHANGED_EVENT, {
     detail: { prefs: next, source }
   }));
   return next;
 }
 
-function getEffectiveUid(auth) {
-  return auth?.currentUser?.uid || null;
+function getSessionAuth() {
+  const session = getSession();
+  if (!session?.uid || !session?.authToken) return null;
+  return {
+    uid: String(session.uid),
+    authToken: String(session.authToken)
+  };
 }
 
-async function pushPrefsToCloud(db, uid, prefs) {
-  const prefsRef = doc(db, 'users', uid, 'preferences', 'global');
-  const payload = normalizePrefs({
-    ...prefs,
-    updatedAtMs: Number(prefs.updatedAtMs || Date.now())
-  });
+function buildHeaders(authToken, includeJson = false) {
+  const headers = {
+    Authorization: `Bearer ${authToken}`
+  };
 
-  await setDoc(prefsRef, {
-    ...payload,
-    updatedAt: serverTimestamp(),
-    source: 'cabinet-web'
-  }, { merge: true });
-}
-
-function scheduleCloudPush(db, uid, prefs) {
-  if (!uid) return;
-
-  if (pushTimer) {
-    clearTimeout(pushTimer);
+  if (includeJson) {
+    headers['Content-Type'] = 'application/json';
   }
 
-  pushTimer = setTimeout(async () => {
+  return headers;
+}
+
+async function apiGetPreferences(uid, authToken) {
+  let lastError = null;
+
+  for (const endpoint of PREFS_API_CANDIDATES) {
     try {
-      await pushPrefsToCloud(db, uid, prefs);
-      console.log('[prefsSync] Cloud push complete:', uid);
+      const response = await fetch(endpoint, {
+        method: 'GET',
+        headers: buildHeaders(authToken, false)
+      });
+
+      if (!response.ok) {
+        lastError = new Error(`GET ${endpoint} -> ${response.status}`);
+        continue;
+      }
+
+      const payload = await response.json().catch(() => ({}));
+      const prefs = payload?.preferences || payload?.data?.preferences || payload?.data || null;
+      if (!prefs || typeof prefs !== 'object') continue;
+
+      return normalizePrefs(prefs);
     } catch (error) {
-      console.warn('[prefsSync] Cloud push skipped:', error?.message || error);
+      lastError = error;
     }
-  }, 400);
+  }
+
+  if (lastError) throw lastError;
+  return null;
+}
+
+async function apiPutPreferences(uid, authToken, prefs) {
+  let lastError = null;
+
+  for (const endpoint of PREFS_API_CANDIDATES) {
+    try {
+      const response = await fetch(endpoint, {
+        method: 'PUT',
+        headers: buildHeaders(authToken, true),
+        body: JSON.stringify({
+          uid,
+          ...normalizePrefs(prefs)
+        })
+      });
+
+      if (!response.ok) {
+        lastError = new Error(`PUT ${endpoint} -> ${response.status}`);
+        continue;
+      }
+
+      return true;
+    } catch (error) {
+      lastError = error;
+    }
+  }
+
+  if (lastError) throw lastError;
+  return false;
 }
 
 function applyCloudLanguageIfNeeded(nextPrefs) {
@@ -109,92 +149,64 @@ function applyCloudLanguageIfNeeded(nextPrefs) {
   });
 }
 
-async function attachRemoteListener(db, auth, uid) {
-  if (unsubscribeRemote) {
-    unsubscribeRemote();
-    unsubscribeRemote = null;
-  }
+function scheduleCloudPush(prefs) {
+  if (pushTimer) clearTimeout(pushTimer);
 
-  const prefsRef = doc(db, 'users', uid, 'preferences', 'global');
-  const localPrefs = readLocalPrefs();
+  pushTimer = setTimeout(async () => {
+    const auth = getSessionAuth();
+    if (!auth) return;
+
+    try {
+      await apiPutPreferences(auth.uid, auth.authToken, prefs);
+    } catch (error) {
+      console.warn('[prefsSync] Cloud push skipped:', error?.message || error);
+    }
+  }, 400);
+}
+
+async function pullCloudPrefs() {
+  const auth = getSessionAuth();
+  if (!auth) return;
 
   try {
-    const snap = await getDoc(prefsRef);
-    if (!snap.exists()) {
-      const seedPrefs = normalizePrefs({
-        ...localPrefs,
-        updatedAtMs: localPrefs.updatedAtMs || Date.now()
-      });
-      scheduleCloudPush(db, uid, seedPrefs);
-    } else {
-      const cloudPrefs = normalizePrefs(snap.data());
-      if (cloudPrefs.updatedAtMs > localPrefs.updatedAtMs) {
-        isApplyingRemote = true;
-        writeLocalPrefs(cloudPrefs, 'cloud-init');
-        applyCloudLanguageIfNeeded(cloudPrefs);
-        isApplyingRemote = false;
-      } else {
-        const localFresh = normalizePrefs({
-          ...localPrefs,
-          updatedAtMs: localPrefs.updatedAtMs || Date.now()
-        });
-        scheduleCloudPush(db, uid, localFresh);
-      }
+    const cloudPrefs = await apiGetPreferences(auth.uid, auth.authToken);
+    if (!cloudPrefs) return;
+
+    const localPrefs = readLocalPrefs();
+    if (cloudPrefs.updatedAtMs > localPrefs.updatedAtMs) {
+      isApplyingRemote = true;
+      writeLocalPrefs(cloudPrefs, 'cloud-sync');
+      applyCloudLanguageIfNeeded(cloudPrefs);
+      isApplyingRemote = false;
+      return;
+    }
+
+    if (localPrefs.updatedAtMs > cloudPrefs.updatedAtMs) {
+      scheduleCloudPush(localPrefs);
     }
   } catch (error) {
-    console.warn('[prefsSync] Initial cloud read skipped:', error?.message || error);
-  }
-
-  unsubscribeRemote = onSnapshot(prefsRef, (snap) => {
-    if (!snap.exists()) return;
-
-    const cloudPrefs = normalizePrefs(snap.data());
-    const currentLocal = readLocalPrefs();
-
-    if (cloudPrefs.updatedAtMs <= currentLocal.updatedAtMs) return;
-
-    isApplyingRemote = true;
-    writeLocalPrefs(cloudPrefs, 'cloud-live');
-    applyCloudLanguageIfNeeded(cloudPrefs);
-    isApplyingRemote = false;
-  }, (error) => {
-    console.warn('[prefsSync] Live listener disabled:', error?.message || error);
-  });
-
-  activeUid = uid;
-
-  const uidFromSession = getEffectiveUid(auth);
-  if (uidFromSession && uidFromSession === uid) {
-    const latestLocal = readLocalPrefs();
-    if (!latestLocal.updatedAtMs) {
-      writeLocalPrefs({ ...latestLocal, updatedAtMs: Date.now() }, 'bootstrap');
-    }
+    console.warn('[prefsSync] Cloud pull skipped:', error?.message || error);
   }
 }
 
-export function setupPreferencesCloudSync(auth) {
+function startPolling() {
+  if (pollTimer) clearInterval(pollTimer);
+  pollTimer = setInterval(() => {
+    pullCloudPrefs();
+  }, 60000);
+}
+
+export function setupPreferencesCloudSync(_auth) {
   if (initialized) return;
   initialized = true;
 
-  let db;
-  try {
-    db = getFirestore(getApp());
-  } catch (error) {
-    console.warn('[prefsSync] Firestore not available:', error?.message || error);
-    return;
+  const bootstrap = readLocalPrefs();
+  if (!bootstrap.updatedAtMs) {
+    writeLocalPrefs({ ...bootstrap, updatedAtMs: Date.now() }, 'bootstrap');
   }
 
   window.addEventListener(PREFS_CHANGED_EVENT, (event) => {
     if (isApplyingRemote) return;
-
-    const uid = activeUid || getEffectiveUid(auth);
-    if (!uid) {
-      if (!warnedNoFirebaseAuth) {
-        warnedNoFirebaseAuth = true;
-        console.log('[prefsSync] Firebase user is not signed in. Firestore sync skipped; local prefs only.');
-      }
-      return;
-    }
 
     const incoming = event?.detail?.prefs || readLocalPrefs();
     const normalized = normalizePrefs({
@@ -202,20 +214,17 @@ export function setupPreferencesCloudSync(auth) {
       updatedAtMs: Number(incoming.updatedAtMs || Date.now())
     });
 
-    scheduleCloudPush(db, uid, normalized);
+    scheduleCloudPush(normalized);
   });
 
-  onAuthStateChanged(auth, async (user) => {
-    if (!user?.uid) {
-      activeUid = null;
-      if (unsubscribeRemote) {
-        unsubscribeRemote();
-        unsubscribeRemote = null;
-      }
-      return;
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+      pullCloudPrefs();
     }
-
-    warnedNoFirebaseAuth = false;
-    await attachRemoteListener(db, auth, user.uid);
   });
+
+  startPolling();
+  pullCloudPrefs();
 }
+
+
