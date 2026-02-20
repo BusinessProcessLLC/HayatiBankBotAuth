@@ -1,4 +1,4 @@
-/* /webapp/app.js v3.4.1 */
+﻿/* /webapp/app.js v3.4.1 */
 // CHANGELOG v3.4.1:
 // - FIXED: Removed alerts (silent session handling)
 // - FIXED: Infinite reload loop prevention
@@ -42,39 +42,73 @@ import { setupLoginHandler, setupRegisterHandler, setupResetHandler, setupFormSw
 import { getSession, saveSession, getCurrentChatId, listAllSessions } from './js/session.js';
 import { showLoadingScreen, showAuthScreen, showCabinet } from './js/ui.js';
 import { setupTokenInterceptor, setupPeriodicTokenCheck, setupBackgroundTokenRefresh, ensureFreshToken } from './js/tokenManager.js';
-import { getUserData } from './js/userService.js'; // ✅ NEW
-import { setupSessionMonitor, setupVisibilityMonitor } from './js/sessionMonitor.js'; // ✅ NEW
+import { getUserData } from './js/userService.js'; // вњ… NEW
+import { setupSessionMonitor, setupVisibilityMonitor } from './js/sessionMonitor.js'; // вњ… NEW
 import { setupPreferencesCloudSync } from './js/settings/preferencesCloudSync.js';
 import './auth/accountActions.js';
 import './cabinet/accountsUI.js';
 import { claimHYC } from './HayatiCoin/hycService.js';
+const ME_API_URL = 'https://api.hayatibank.ru/api/me';
+
+async function restoreSessionFromServerCookie(auth) {
+  try {
+    const response = await fetch(ME_API_URL, {
+      method: 'GET',
+      credentials: 'include'
+    });
+
+    if (!response.ok) return null;
+
+    const payload = await response.json().catch(() => null);
+    const customToken = payload?.customToken || '';
+    const serverUser = payload?.user || null;
+    if (!customToken || !serverUser?.uid) return null;
+
+    const userCredential = await signInWithCustomToken(auth, customToken);
+    const user = userCredential.user;
+    const idToken = await user.getIdToken(true);
+    const chatId = getCurrentChatId();
+
+    saveSession({
+      authToken: idToken,
+      tokenExpiry: Date.now() + (60 * 60 * 1000),
+      uid: user.uid,
+      email: user.email || serverUser.email || ''
+    }, chatId);
+
+    return { uid: user.uid, email: user.email || serverUser.email || '' };
+  } catch (error) {
+    console.warn('[app] restoreSessionFromServerCookie failed:', error?.message || error);
+    return null;
+  }
+}
 
 // ==================== INITIALIZATION ====================
 window.addEventListener('DOMContentLoaded', async () => {
-  console.log('🚀 [app.js] DOMContentLoaded - Starting initialization...');
+  console.log('рџљЂ [app.js] DOMContentLoaded - Starting initialization...');
   
   try {
     // ==================== STEP 1: I18N (CRITICAL FIRST) ====================
-    console.log('🌍 [app.js] Step 1/7: Initializing i18n...');
+    console.log('рџЊЌ [app.js] Step 1/7: Initializing i18n...');
     
     if (!window.i18n) {
       throw new Error('i18n manager not found');
     }
     
     await window.i18n.init();
-    console.log('✅ [app.js] i18n ready:', window.i18n.getCurrentLanguage());
-    console.log(`📚 [app.js] Loaded ${Object.keys(window.i18n.translations).length} translation keys`);
+    console.log('вњ… [app.js] i18n ready:', window.i18n.getCurrentLanguage());
+    console.log(`рџ“љ [app.js] Loaded ${Object.keys(window.i18n.translations).length} translation keys`);
     
-    // ✅ CRITICAL FIX: Wait for DOM to be fully ready before first update
-    console.log('⏳ [app.js] Waiting for DOM to be fully ready...');
+    // вњ… CRITICAL FIX: Wait for DOM to be fully ready before first update
+    console.log('вЏі [app.js] Waiting for DOM to be fully ready...');
     await new Promise(resolve => setTimeout(resolve, 50));
     
-    // ✅ NOW update page translations
+    // вњ… NOW update page translations
     window.i18n.updatePage();
-    console.log('✅ [app.js] Initial translations applied to page');
+    console.log('вњ… [app.js] Initial translations applied to page');
     
     // ==================== STEP 2: TELEGRAM SETUP ====================
-    console.log('📱 [app.js] Step 2/7: Setting up Telegram...');
+    console.log('рџ“± [app.js] Step 2/7: Setting up Telegram...');
     
     const tg = window.Telegram?.WebApp;
     if (tg) {
@@ -85,23 +119,23 @@ window.addEventListener('DOMContentLoaded', async () => {
       tg.setHeaderColor('#0f172a');
       tg.setBackgroundColor('#0f172a');
       
-      console.log('✅ [app.js] Telegram WebApp initialized');
-      console.log('📱 Platform:', tg.platform);
-      console.log('👤 User:', tg.initDataUnsafe?.user);
+      console.log('вњ… [app.js] Telegram WebApp initialized');
+      console.log('рџ“± Platform:', tg.platform);
+      console.log('рџ‘¤ User:', tg.initDataUnsafe?.user);
     } else {
-      console.log('ℹ️ Running in browser (not Telegram)');
+      console.log('в„№пёЏ Running in browser (not Telegram)');
     }
     
     // ==================== STEP 3: FIREBASE INIT ====================
-    console.log('🔥 [app.js] Step 3/7: Initializing Firebase...');
+    console.log('рџ”Ґ [app.js] Step 3/7: Initializing Firebase...');
     
-    // ✅ Check if Firebase already initialized (prevent duplicate init)
+    // вњ… Check if Firebase already initialized (prevent duplicate init)
     let app;
     try {
       app = initializeApp(FIREBASE_CONFIG);
     } catch (err) {
       if (err.code === 'app/duplicate-app') {
-        console.log('⚠️ Firebase already initialized, using existing instance');
+        console.log('вљ пёЏ Firebase already initialized, using existing instance');
         const { getApp } = await import('https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js');
         app = getApp();
       } else {
@@ -111,60 +145,60 @@ window.addEventListener('DOMContentLoaded', async () => {
     
     const auth = getAuth(app);
     
-    // ✅ Clear any stale auth state on startup
+    // вњ… Clear any stale auth state on startup
     try {
       await auth.signOut();
-      console.log('🧹 Cleared stale Firebase auth state');
+      console.log('рџ§№ Cleared stale Firebase auth state');
     } catch (cleanupErr) {
-      console.log('ℹ️ No auth state to clear');
+      console.log('в„№пёЏ No auth state to clear');
     }
     
     const db = initializeFirestore(app, {
       cacheSizeBytes: CACHE_SIZE_UNLIMITED
-      // ❌ REMOVED: experimentalForceLongPolling - causes offline issues
+      // вќЊ REMOVED: experimentalForceLongPolling - causes offline issues
     });
     
-    console.log('✅ Firebase initialized');
-    console.log('🔌 Firestore: WebSocket mode (default)');
+    console.log('вњ… Firebase initialized');
+    console.log('рџ”Њ Firestore: WebSocket mode (default)');
     
     // ==================== STEP 4: TOKEN MANAGEMENT ====================
-    console.log('🔒 [app.js] Step 4/7: Setting up token management...');
+    console.log('рџ”’ [app.js] Step 4/7: Setting up token management...');
     
     setupTokenInterceptor();
     setupPeriodicTokenCheck();
     setupBackgroundTokenRefresh();
-    setupSessionMonitor(); // ✅ NEW: Monitor session expiry
-    setupVisibilityMonitor(); // ✅ NEW: Check session on page visible
+    setupSessionMonitor(); // вњ… NEW: Monitor session expiry
+    setupVisibilityMonitor(); // вњ… NEW: Check session on page visible
     setupPreferencesCloudSync(auth);
     
-    console.log('✅ Token auto-refresh enabled');
-    console.log('✅ Session monitoring enabled');
+    console.log('вњ… Token auto-refresh enabled');
+    console.log('вњ… Session monitoring enabled');
     
     // ==================== STEP 5: AUTH HANDLERS ====================
-    console.log('🔐 [app.js] Step 5/7: Setting up auth handlers...');
+    console.log('рџ”ђ [app.js] Step 5/7: Setting up auth handlers...');
     
     setupLoginHandler(auth);
     setupRegisterHandler(auth, db);
     setupResetHandler(auth);
     setupFormSwitching();
     
-    console.log('✅ Auth handlers registered');
+    console.log('вњ… Auth handlers registered');
     
     // ==================== STEP 6: SHOW LOADING SCREEN ====================
-    console.log('⏳ [app.js] Step 6/7: Showing loading screen...');
+    console.log('вЏі [app.js] Step 6/7: Showing loading screen...');
     
     showLoadingScreen(window.i18n.t('common.loading'));
     
     // ==================== STEP 7: SESSION CHECK ====================
-    console.log('🔍 [app.js] Step 7/7: Checking session...');
+    console.log('рџ”Ќ [app.js] Step 7/7: Checking session...');
     
     const chatId = getCurrentChatId();
-    console.log('📱 ChatId:', chatId || 'none (browser)');
+    console.log('рџ“± ChatId:', chatId || 'none (browser)');
     
     const session = getSession(chatId);
     
     if (session) {
-      console.log('✅ Session found:', {
+      console.log('вњ… Session found:', {
         email: session.email,
         uid: session.uid,
         expires: new Date(session.tokenExpiry).toLocaleString()
@@ -174,44 +208,69 @@ window.addEventListener('DOMContentLoaded', async () => {
       const isValid = await validateToken(session.authToken, session.uid);
       
       if (isValid) {
-        console.log('✅ Token valid, loading cabinet...');
+        console.log('вњ… Token valid, loading cabinet...');
         
         // Claim HYC for app login (silent)
         await claimHYC('app_login');
         
-        // ✅ Fetch full user data from Firestore (with fallback)
+        // вњ… Fetch full user data from Firestore (with fallback)
         let userData;
         try {
           userData = await getUserData(session.uid);
         } catch (err) {
-          console.warn('⚠️ [Session] Could not fetch user data, using minimal data:', err.message);
+          console.warn('вљ пёЏ [Session] Could not fetch user data, using minimal data:', err.message);
           userData = null;
         }
         
-        // ✅ NOW show cabinet with full userData (including hayatiId)
+        // вњ… NOW show cabinet with full userData (including hayatiId)
         showCabinet(userData || { uid: session.uid, email: session.email });
       } else {
         console.log('⚠️ Token expired');
-        showAuthScreen('login');
+        const restored = await restoreSessionFromServerCookie(auth);
+        if (restored?.uid) {
+          let userData;
+          try {
+            userData = await getUserData(restored.uid);
+          } catch (err) {
+            console.warn('[Restored Session] Could not fetch user data, using minimal data:', err.message);
+            userData = null;
+          }
+          showCabinet(userData || restored);
+        } else {
+          showAuthScreen('login');
+        }
       }
     } else {
-      console.log('ℹ️ No session');
+      console.log('в„№пёЏ No session');
+      const restored = await restoreSessionFromServerCookie(auth);
+      if (restored?.uid) {
+        let userData;
+        try {
+          userData = await getUserData(restored.uid);
+        } catch (err) {
+          console.warn('[Restored Session] Could not fetch user data, using minimal data:', err.message);
+          userData = null;
+        }
+        showCabinet(userData || restored);
+        console.log('Session restored from server cookie');
+        return;
+      }
       
       // Try Telegram auto-login
       if (tg && tg.initDataUnsafe?.user) {
         const tgChatId = tg.initDataUnsafe.user.id;
         
-        console.log('🔍 Checking Telegram binding:', tgChatId);
+        console.log('рџ”Ќ Checking Telegram binding:', tgChatId);
         
         const binding = await checkTelegramBinding(tgChatId, tg.initData);
         
         if (binding && binding.bound) {
-          console.log('🔗 Telegram bound to:', binding.uid);
+          console.log('рџ”— Telegram bound to:', binding.uid);
           
           const silentLoginResult = await silentLogin(binding.uid, tgChatId, tg.initData);
           
           if (silentLoginResult && silentLoginResult.success) {
-            console.log('✅ Silent login successful');
+            console.log('вњ… Silent login successful');
             
             const userCredential = await signInWithCustomToken(auth, silentLoginResult.customToken);
             const user = userCredential.user;
@@ -227,46 +286,46 @@ window.addEventListener('DOMContentLoaded', async () => {
             // Claim HYC for app login (silent)
             await claimHYC('app_login');
             
-            // ✅ Fetch full user data from Firestore (with fallback)
+            // вњ… Fetch full user data from Firestore (with fallback)
             let userData;
             try {
               userData = await getUserData(user.uid);
             } catch (err) {
-              console.warn('⚠️ [Telegram] Could not fetch user data, using minimal data:', err.message);
+              console.warn('вљ пёЏ [Telegram] Could not fetch user data, using minimal data:', err.message);
               userData = null;
             }
             
             showCabinet(userData || { uid: user.uid, email: user.email });
           } else {
-            console.log('⚠️ Silent login failed');
+            console.log('вљ пёЏ Silent login failed');
             showAuthScreen('login');
           }
         } else {
-          console.log('ℹ️ Telegram not bound');
+          console.log('в„№пёЏ Telegram not bound');
           showAuthScreen('login');
         }
       } else {
-        console.log('ℹ️ Not in Telegram');
+        console.log('в„№пёЏ Not in Telegram');
         showAuthScreen('login');
       }
     }
     
-    console.log('✅✅✅ App initialization complete!');
+    console.log('вњ…вњ…вњ… App initialization complete!');
     
-    // ✅ Clear cleanup flag on success
+    // вњ… Clear cleanup flag on success
     sessionStorage.removeItem('firebase_cleanup_attempted');
     
   } catch (err) {
-    console.error('❌❌❌ CRITICAL ERROR during initialization:', err);
+    console.error('вќЊвќЊвќЊ CRITICAL ERROR during initialization:', err);
     
-    // ✅ Handle Firebase auth errors gracefully
+    // вњ… Handle Firebase auth errors gracefully
     if (err.code && err.code.startsWith('auth/')) {
-      console.log('🧹 Firebase auth error detected, clearing state...');
+      console.log('рџ§№ Firebase auth error detected, clearing state...');
       
       // Check if we already tried cleanup (prevent infinite loop)
       const cleanupAttempted = sessionStorage.getItem('firebase_cleanup_attempted');
       if (cleanupAttempted) {
-        console.error('❌ Cleanup already attempted, showing login instead');
+        console.error('вќЊ Cleanup already attempted, showing login instead');
         sessionStorage.removeItem('firebase_cleanup_attempted');
         showAuthScreen('login');
         return;
@@ -282,15 +341,15 @@ window.addEventListener('DOMContentLoaded', async () => {
         databases.forEach(db => {
           if (db.name?.includes('firebase')) {
             indexedDB.deleteDatabase(db.name);
-            console.log(`🗑️ Deleted Firebase DB: ${db.name}`);
+            console.log(`рџ—‘пёЏ Deleted Firebase DB: ${db.name}`);
           }
         });
       } catch (cleanErr) {
-        console.error('⚠️ Cleanup failed:', cleanErr);
+        console.error('вљ пёЏ Cleanup failed:', cleanErr);
       }
       
       // SILENT reload - no alert, just refresh
-      console.log('🔄 Reloading page...');
+      console.log('рџ”„ Reloading page...');
       window.location.reload();
       return;
     }
@@ -302,3 +361,5 @@ window.addEventListener('DOMContentLoaded', async () => {
     showAuthScreen('login');
   }
 });
+
+

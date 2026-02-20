@@ -9,6 +9,7 @@ import { getAuth } from 'https://www.gstatic.com/firebasejs/12.7.0/firebase-auth
 import { clearSession, getSession, getCurrentChatId } from '../js/session.js';
 import { showAuthScreen, showLoadingScreen } from '../js/ui.js';
 import { deleteUserAccount, deleteTelegramSession } from '../js/api.js';
+const LOGOUT_API_URL = 'https://api.hayatibank.ru/api/logout';
 
 /**
  * Logout user (clear current chatId session only)
@@ -29,6 +30,16 @@ export async function logout() {
     // Sign out from Firebase Auth
     const auth = getAuth();
     await auth.signOut();
+
+    // Clear server-side session cookie
+    try {
+      await fetch(LOGOUT_API_URL, {
+        method: 'POST',
+        credentials: 'include'
+      });
+    } catch (err) {
+      console.warn('[logout] Server session clear failed:', err?.message || err);
+    }
     
     // Delete telegram_sessions from backend
     if (session && session.uid && chatId) {

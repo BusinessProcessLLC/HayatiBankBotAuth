@@ -10,8 +10,8 @@
 // - Client-side premium access checking
 // Premium access management for frontend
 
-import { API_URL } from '../config.js';
 import { getSession } from '../session.js';
+const PERMISSIONS_API_URL = 'https://api.hayatibank.ru/api/permissions';
 
 /**
  * Check permissions for current user
@@ -39,7 +39,10 @@ export async function checkPremiumStatus() {
       };
     }
     
-    const response = await fetch(`${API_URL}/api/permissions/${session.uid}`);
+    const response = await fetch(PERMISSIONS_API_URL, {
+      method: 'GET',
+      credentials: 'include'
+    });
     
     if (!response.ok) {
       throw new Error(`Permissions check failed: ${response.status}`);

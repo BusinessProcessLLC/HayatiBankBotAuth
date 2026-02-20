@@ -15,6 +15,19 @@ const cabinetScreen = document.getElementById('cabinetScreen');
 const loginForm = document.getElementById('loginForm');
 const registerForm = document.getElementById('registerForm');
 const resetForm = document.getElementById('resetForm');
+const UNIFIED_AUTH_URL = 'https://auth.hayatibank.ru/';
+const RETURN_COOKIE_NAME = 'hayati_return_to';
+
+function setReturnCookie(targetUrl) {
+  try {
+    const secure = location.protocol === 'https:' ? '; Secure' : '';
+    const host = location.hostname || '';
+    const domain = host.endsWith('.hayatibank.ru') ? '; Domain=.hayatibank.ru' : '';
+    document.cookie = `${RETURN_COOKIE_NAME}=${encodeURIComponent(targetUrl)}; Path=/${domain}; SameSite=Lax; Max-Age=120${secure}`;
+  } catch (_error) {
+    // no-op
+  }
+}
 
 function t(key, fallback) {
   try {
@@ -56,22 +69,31 @@ export function showLoadingScreen(message = 'Loading...') {
 }
 
 export function showAuthScreen(mode = 'login') {
-  showScreen('authScreen');
-  setDocumentTitle('auth');
+  try {
+    const target = new URL(UNIFIED_AUTH_URL);
+    setReturnCookie(window.location.href);
+    if (mode && mode !== 'login') target.searchParams.set('mode', mode);
+    window.location.replace(target.toString());
+    return;
+  } catch (_err) {
+    // Fallback to legacy inline auth if URL construction fails.
+    showScreen('authScreen');
+    setDocumentTitle('auth');
 
-  if (loginForm) loginForm.classList.add('hidden');
-  if (registerForm) registerForm.classList.add('hidden');
-  if (resetForm) resetForm.classList.add('hidden');
+    if (loginForm) loginForm.classList.add('hidden');
+    if (registerForm) registerForm.classList.add('hidden');
+    if (resetForm) resetForm.classList.add('hidden');
 
-  if (mode === 'login' && loginForm) {
-    loginForm.classList.remove('hidden');
-  } else if (mode === 'register' && registerForm) {
-    registerForm.classList.remove('hidden');
-  } else if (mode === 'reset' && resetForm) {
-    resetForm.classList.remove('hidden');
+    if (mode === 'login' && loginForm) {
+      loginForm.classList.remove('hidden');
+    } else if (mode === 'register' && registerForm) {
+      registerForm.classList.remove('hidden');
+    } else if (mode === 'reset' && resetForm) {
+      resetForm.classList.remove('hidden');
+    }
+
+    clearErrors();
   }
-
-  clearErrors();
 }
 
 export async function showCabinet(userData) {

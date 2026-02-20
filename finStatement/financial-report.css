@@ -85,6 +85,7 @@
 .report-section h3 {
   font-size: 20px;
   margin-bottom: 20px;
+  text-align: center;
   color: var(--neon-blue);
   text-shadow: 0 0 10px rgba(0, 240, 255, 0.3);
   user-select: none;
@@ -135,6 +136,7 @@
 .report-cell.subcategory-cell {
   color: var(--text-muted);
   font-size: 14px;
+  text-align: left;
 }
 
 /* Group Total Row */
@@ -420,6 +422,15 @@
 }
 
 @media (max-width: 768px) {
+  .financial-report,
+  .report-grid,
+  .report-section,
+  .report-row {
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+
   .year-selector-buttons {
     gap: 6px;
   }
@@ -453,6 +464,14 @@
   
   .report-cell.amount-cell {
     text-align: left;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  .report-cell {
+    min-width: 0;
+    overflow-wrap: anywhere;
   }
   
   .formula {
@@ -465,6 +484,133 @@
   
   .grand-total-amount {
     font-size: 16px;
+  }
+
+  /* Mobile compact mode: label first, value below (only when section is not expanded) */
+  .report-section:not(.mobile-expanded) .report-row {
+    grid-template-columns: 1fr;
+    gap: 6px;
+    align-items: start;
+  }
+
+  .report-section:not(.mobile-expanded) .report-cell {
+    line-height: 1.35;
+  }
+
+  .report-section:not(.mobile-expanded) .report-cell.amount-cell {
+    justify-self: start;
+    font-size: 15px;
+  }
+
+  .report-section:not(.mobile-expanded) .report-row.subcategory-row {
+    margin-left: 0;
+    padding-left: 16px;
+  }
+}
+
+/* Mobile hint + fullscreen expand */
+.section-mobile-hint {
+  display: none;
+  margin-left: 10px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(0, 240, 255, 0.35);
+  color: rgba(215, 244, 255, 0.92);
+  background: rgba(0, 240, 255, 0.12);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  animation: section-hint-pulse 1.8s ease-in-out infinite;
+  vertical-align: middle;
+}
+
+.section-mobile-close {
+  display: none;
+}
+
+@keyframes section-hint-pulse {
+  0%, 100% {
+    opacity: 0.45;
+    box-shadow: 0 0 0 0 rgba(0, 240, 255, 0.16);
+  }
+  50% {
+    opacity: 1;
+    box-shadow: 0 0 0 8px rgba(0, 240, 255, 0);
+  }
+}
+
+@media (max-width: 768px) {
+  .section-mobile-hint.is-visible {
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .section-mobile-close {
+    display: none;
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 28px;
+    height: 28px;
+    border-radius: 999px;
+    border: 1px solid rgba(0, 240, 255, 0.35);
+    background: rgba(4, 16, 34, 0.88);
+    color: rgba(231, 245, 255, 0.95);
+    font-size: 22px;
+    line-height: 1;
+    cursor: pointer;
+  }
+
+  .report-mobile-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 220;
+    background: rgba(2, 6, 23, 0.72);
+  }
+
+  .report-mobile-overlay.is-open {
+    display: block;
+  }
+
+  .report-mobile-overlay .report-section.mobile-expanded {
+    margin: 0;
+    width: 100vw;
+    height: 100dvh;
+    max-width: 100vw;
+    border-radius: 0;
+    border-left: 0;
+    border-right: 0;
+    padding: 14px 12px 20px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
+    background: linear-gradient(160deg, rgba(10, 16, 34, 0.985), rgba(2, 6, 23, 0.985));
+  }
+
+  .report-mobile-overlay .report-section.mobile-expanded h3 {
+    position: sticky;
+    top: 0;
+    z-index: 3;
+    background: rgba(7, 14, 30, 0.96);
+    padding: 8px 44px 10px 0;
+    margin-bottom: 10px;
+  }
+
+  .report-mobile-overlay .report-section.mobile-expanded .section-mobile-hint {
+    animation: none;
+    box-shadow: none;
+  }
+
+  .report-mobile-overlay .report-section.mobile-expanded .section-mobile-close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  body.report-mobile-open {
+    overflow: hidden;
   }
 }
 

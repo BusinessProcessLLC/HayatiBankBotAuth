@@ -144,6 +144,7 @@
   "report.liabilities": "📉 Liabilities",
   "report.analysis": "📈 Analysis",
   "report.clickToEdit": "Click to edit",
+  "report.tapToView": "Tap to view",
   "report.total": "total",
   "report.subtotal": "subtotal",
 
@@ -269,6 +270,7 @@
   "offering.budget.cashFlow": "Cash Flow (3 years)",
   "offering.budget.liquidAssets": "Liquid Assets (80%)",
   "offering.learnMore": "Learn More",
+  "offering.tapToView": "Tap to view",
   "offering.price": "Price",
   "offering.roi": "ROI",
 

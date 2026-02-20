@@ -1,4 +1,4 @@
-/* /webapp/js/cabinet/reports/financialReport.js v1.3.0 */
+﻿/* /webapp/js/cabinet/reports/financialReport.js v1.3.0 */
 // CHANGELOG v1.3.0:
 // - CRITICAL: Made Offering Zone fully async and isolated (prevents Android freeze)
 // - Added timeouts: 3s for exchange rates, 5s for offering zone
@@ -19,6 +19,12 @@ import {
   formatAnalysisSection 
 } from './reportFormatters.js';
 import { renderOfferingZone } from '../offeringZone/offeringZone.js';
+
+let mobileExpandResizeBound = false;
+let mobileExpandKeydownBound = false;
+let mobileExpandedSection = null;
+let mobileExpandedPlaceholder = null;
+let mobileOverlayNode = null;
 /**
  * Render financial report
  */
@@ -27,6 +33,7 @@ import { renderOfferingZone } from '../offeringZone/offeringZone.js';
 
 export async function renderFinancialReport(accountId, year = new Date().getFullYear()) {
   try {
+    closeMobileExpandedSection();
     console.log(`📊 Rendering financial report: ${accountId}, ${year}`);
     
     // Show loading
@@ -76,9 +83,9 @@ export async function renderFinancialReport(accountId, year = new Date().getFull
     // Attach listeners
     attachReportListeners(accountId);
     
-    console.log('✅ Financial report rendered');
+    console.log('вњ… Financial report rendered');
     
-    // ✅ NEW: Render Offering Zone (NON-BLOCKING, ISOLATED)
+    // вњ… NEW: Render Offering Zone (NON-BLOCKING, ISOLATED)
     // Don't wait for offering zone - let it load in background
     renderOfferingZoneAsync(accountId, year, reportData).catch(err => {
       console.error('❌ Offering zone failed (non-critical):', err);
@@ -105,25 +112,38 @@ export async function renderFinancialReport(accountId, year = new Date().getFull
  * Render offering zone asynchronously (non-blocking)
  */
 async function renderOfferingZoneAsync(accountId, year, reportData) {
+  const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
   try {
     console.log('🎁 [Background] Loading offering zone...');
-    
-    // ✅ Fetch exchange rates with timeout
-    const rates = await Promise.race([
-      fetchExchangeRates(),
-      new Promise((_, reject) => setTimeout(() => reject(new Error('Rates timeout')), 3000))
-    ]);
-    
-    // ✅ Render offering zone with timeout
-    await Promise.race([
-      renderOfferingZone(accountId, year, reportData, rates),
-      new Promise((_, reject) => setTimeout(() => reject(new Error('Offering zone timeout')), 5000))
-    ]);
-    
-    console.log('✅ [Background] Offering zone loaded successfully');
-    
+
+    // fetchExchangeRates already has fallback, so no hard timeout race here
+    const rates = await fetchExchangeRates();
+
+    const maxAttempts = 2;
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      try {
+        const stale = document.getElementById('offeringZone');
+        if (stale) stale.remove();
+
+        await renderOfferingZone(accountId, year, reportData, rates);
+        const mounted = document.getElementById('offeringZone');
+        if (!mounted) {
+          throw new Error('Offering zone was not mounted');
+        }
+
+        console.log(`✅ [Background] Offering zone loaded successfully (attempt ${attempt})`);
+        return;
+      } catch (attemptErr) {
+        console.warn(`⚠️ [Background] Offering zone attempt ${attempt} failed:`, attemptErr?.message || attemptErr);
+        if (attempt < maxAttempts) {
+          await sleep(700);
+        }
+      }
+    }
+
+    console.warn('⚠️ [Background] Offering zone failed after retries');
   } catch (err) {
-    console.warn('⚠️ [Background] Offering zone failed (non-critical):', err.message);
+    console.warn('⚠️ [Background] Offering zone failed (non-critical):', err?.message || err);
     // Don't show error to user - offering zone is optional
   }
 }
@@ -133,7 +153,7 @@ async function renderOfferingZoneAsync(accountId, year, reportData) {
  */
 async function fetchExchangeRates() {
   try {
-    // Use ЦБ РФ API for AED/RUB
+    // Use CBR API for AED/RUB
     const response = await fetch('https://www.cbr-xml-daily.ru/daily_json.js', {
       timeout: 5000
     });
@@ -184,6 +204,92 @@ function renderYearSelector(currentYear) {
 /**
  * Attach report event listeners
  */
+function isMobileViewport() {
+  return typeof window !== 'undefined' && window.matchMedia('(max-width: 768px)').matches;
+}
+
+function setupMobileExpandHints() {
+  const t = window.i18n?.t ? window.i18n.t.bind(window.i18n) : (key, fallback) => fallback || key;
+  const hintText = t('report.tapToView', 'Tap to view');
+  const headers = document.querySelectorAll('.report-section h3');
+  headers.forEach((header) => {
+    let hint = header.querySelector('.section-mobile-hint');
+    if (!hint) {
+      hint = document.createElement('span');
+      hint.className = 'section-mobile-hint';
+      header.appendChild(hint);
+    }
+    hint.textContent = hintText;
+    hint.classList.toggle('is-visible', isMobileViewport());
+
+    let closeBtn = header.querySelector('.section-mobile-close');
+    if (!closeBtn) {
+      closeBtn = document.createElement('button');
+      closeBtn.type = 'button';
+      closeBtn.className = 'section-mobile-close';
+      closeBtn.setAttribute('aria-label', 'Close expanded section');
+      closeBtn.textContent = '×';
+      header.appendChild(closeBtn);
+    }
+  });
+}
+
+function ensureMobileOverlay() {
+  if (mobileOverlayNode) return mobileOverlayNode;
+  mobileOverlayNode = document.createElement('div');
+  mobileOverlayNode.className = 'report-mobile-overlay';
+  mobileOverlayNode.addEventListener('click', (event) => {
+    if (event.target === mobileOverlayNode) {
+      closeMobileExpandedSection();
+    }
+  });
+  document.body.appendChild(mobileOverlayNode);
+  return mobileOverlayNode;
+}
+
+function closeMobileExpandedSection() {
+  if (!mobileExpandedSection) return;
+
+  const sectionToClose = mobileExpandedSection;
+  sectionToClose.classList.remove('mobile-expanded');
+
+  if (mobileExpandedPlaceholder && mobileExpandedPlaceholder.parentNode) {
+    mobileExpandedPlaceholder.parentNode.replaceChild(sectionToClose, mobileExpandedPlaceholder);
+  }
+
+  if (mobileOverlayNode) {
+    mobileOverlayNode.classList.remove('is-open');
+  }
+
+  document.body.classList.remove('report-mobile-open');
+  mobileExpandedSection = null;
+  mobileExpandedPlaceholder = null;
+}
+
+function openMobileExpandedSection(sectionNode) {
+  if (!sectionNode || !isMobileViewport()) return;
+
+  if (mobileExpandedSection === sectionNode) {
+    closeMobileExpandedSection();
+    return;
+  }
+
+  closeMobileExpandedSection();
+
+  const overlay = ensureMobileOverlay();
+  const placeholder = document.createElement('div');
+  placeholder.className = 'report-mobile-placeholder';
+  sectionNode.parentNode.insertBefore(placeholder, sectionNode);
+  overlay.appendChild(sectionNode);
+
+  sectionNode.classList.add('mobile-expanded');
+  overlay.classList.add('is-open');
+  document.body.classList.add('report-mobile-open');
+
+  mobileExpandedSection = sectionNode;
+  mobileExpandedPlaceholder = placeholder;
+}
+
 function attachReportListeners(accountId) {
   // Year selector
   document.querySelectorAll('.year-btn').forEach(btn => {
@@ -192,12 +298,44 @@ function attachReportListeners(accountId) {
       renderFinancialReport(accountId, year);
     });
   });
-  
-  // Section click handlers (for future modal editing)
+
+  setupMobileExpandHints();
+  if (!mobileExpandResizeBound) {
+    window.addEventListener('resize', () => {
+      if (!isMobileViewport()) {
+        closeMobileExpandedSection();
+      }
+      setupMobileExpandHints();
+    }, { passive: true });
+    mobileExpandResizeBound = true;
+  }
+  if (!mobileExpandKeydownBound) {
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') {
+        closeMobileExpandedSection();
+      }
+    });
+    mobileExpandKeydownBound = true;
+  }
+
+  // Section click handlers
   document.querySelectorAll('.report-section h3').forEach(header => {
+    const sectionNode = header.closest('.report-section');
     header.style.cursor = 'pointer';
-    header.addEventListener('click', () => {
-      const section = header.textContent.trim();
+    header.addEventListener('click', (event) => {
+      if (isMobileViewport()) {
+        if (event.target.closest('.section-mobile-close')) {
+          closeMobileExpandedSection();
+          return;
+        }
+
+        openMobileExpandedSection(sectionNode);
+        return;
+      }
+
+      const headerClone = header.cloneNode(true);
+      headerClone.querySelectorAll('.section-mobile-hint, .section-mobile-close').forEach((node) => node.remove());
+      const section = headerClone.textContent.trim();
       showEditModal(section, accountId);
     });
   });
@@ -215,3 +353,4 @@ function showEditModal(section, accountId) {
 if (typeof window !== 'undefined') {
   window.renderFinancialReport = renderFinancialReport;
 }
+

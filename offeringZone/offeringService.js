@@ -13,10 +13,11 @@
 
 import { getSession } from '../js/session.js';
 import { API_URL } from '../js/config.js';
+const projectMainCache = new Map();
 
 /**
  * Calculate available budget for real estate investment
- * Formula: (cashFlow * 12 * 3) + (liquidAssets * 0.8)
+ * Formula: (cashFlowYearly * 3) + (liquidAssets * 0.8)
  */
 export function calculateAvailableBudget(financialData) {
   const { income, expenses, assets } = financialData;
@@ -140,14 +141,11 @@ export function filterUnitsByBudget(units, budgetRub, rates) {
     );
   });
   
-  // Sort by ROI (descending) if available, otherwise by price (ascending)
+  // Sort by cheapest first (MVP strategy)
   filtered.sort((a, b) => {
-    // Prefer units with ROI data
-    if (a.unitCashOnCashROI && b.unitCashOnCashROI) {
-      return b.unitCashOnCashROI - a.unitCashOnCashROI;
-    }
-    // Otherwise sort by price (cheaper first = better liquidity)
-    return a.unitPriceAed - b.unitPriceAed;
+    const priceDelta = (a.unitPriceAed || 0) - (b.unitPriceAed || 0);
+    if (priceDelta !== 0) return priceDelta;
+    return String(a.compositeId || a.id || '').localeCompare(String(b.compositeId || b.id || ''));
   });
   
   console.log(`✅ Filtered to ${filtered.length} units within budget`);
@@ -160,6 +158,52 @@ export function filterUnitsByBudget(units, budgetRub, rates) {
  */
 export function getTopOffers(units, count = 3) {
   return units.slice(0, count);
+}
+
+function extractDocId(doc = {}) {
+  if (doc.id) return String(doc.id);
+  if (doc.documentId) return String(doc.documentId);
+  if (doc.name && typeof doc.name === 'string') {
+    const parts = doc.name.split('/');
+    return parts[parts.length - 1] || '';
+  }
+  return '';
+}
+
+/**
+ * Fetch /HBD/{projectId}/info/main document (cached)
+ */
+export async function fetchProjectMain(projectId) {
+  const key = String(projectId || '').trim();
+  if (!key) return null;
+  if (projectMainCache.has(key)) return projectMainCache.get(key);
+
+  try {
+    const session = getSession();
+    if (!session?.authToken) return null;
+
+    const response = await fetch(`${API_URL}/api/firestore/get`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'ngrok-skip-browser-warning': 'true'
+      },
+      body: JSON.stringify({
+        path: `HBD/${key}/info`,
+        authToken: session.authToken
+      })
+    });
+
+    if (!response.ok) return null;
+    const payload = await response.json().catch(() => ({}));
+    const docs = Array.isArray(payload.documents) ? payload.documents : [];
+    const mainDoc = docs.find((doc) => extractDocId(doc) === 'main') || docs[0] || null;
+    projectMainCache.set(key, mainDoc);
+    return mainDoc;
+  } catch (err) {
+    console.warn('⚠️ fetchProjectMain failed:', err?.message || err);
+    return null;
+  }
 }
 
 // Helper functions

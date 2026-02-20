@@ -10,7 +10,16 @@
 // - MOVED: From /js/cabinet/reports/ to /offeringZone/ (modular)
 // - FIXED: Import paths
 
-import { calculateAvailableBudget, fetchMarketSnapshot, filterUnitsByBudget, getTopOffers } from './offeringService.js';
+import {
+  calculateAvailableBudget,
+  fetchMarketSnapshot,
+  filterUnitsByBudget,
+  getTopOffers,
+  fetchProjectMain
+} from './offeringService.js';
+
+const offerUnitRegistry = new Map();
+let detailsModalEl = null;
 
 /**
  * Render offering zone
@@ -39,7 +48,7 @@ export async function renderOfferingZone(accountId, year, financialData, rates) 
     const allUnits = await fetchMarketSnapshot();
     
     if (allUnits.length === 0) {
-      updateOfferingContainer(offeringContainer, budgetInfo, [], rates);
+    await updateOfferingContainer(offeringContainer, budgetInfo, [], rates);
       return;
     }
     
@@ -50,7 +59,7 @@ export async function renderOfferingZone(accountId, year, financialData, rates) 
     const topOffers = getTopOffers(filteredUnits, 3);
     
     // Update UI
-    updateOfferingContainer(offeringContainer, budgetInfo, topOffers, rates);
+    await updateOfferingContainer(offeringContainer, budgetInfo, topOffers, rates);
     
     console.log('✅ Offering zone rendered');
     
@@ -94,7 +103,7 @@ function createOfferingContainer(budgetInfo, state = 'loading') {
 /**
  * Update offering container with offers
  */
-function updateOfferingContainer(container, budgetInfo, offers, rates) {
+async function updateOfferingContainer(container, budgetInfo, offers, rates) {
   const t = window.i18n.t.bind(window.i18n);
   
   // Clear container
@@ -144,9 +153,20 @@ function updateOfferingContainer(container, budgetInfo, offers, rates) {
   // Offers grid
   const offersGrid = document.createElement('div');
   offersGrid.className = 'offers-grid';
-  
+
+  const heroMap = new Map();
+  const uniqueProjectIds = [...new Set(offers.map((u) => String(u.projectId || '').trim()).filter(Boolean))];
+  if (uniqueProjectIds.length) {
+    const mains = await Promise.all(uniqueProjectIds.map((projectId) => fetchProjectMain(projectId)));
+    uniqueProjectIds.forEach((projectId, index) => {
+      heroMap.set(projectId, firstMediaFromProjectMain(mains[index]));
+    });
+  }
+
   offers.forEach(unit => {
-    const card = createOfferCard(unit, rates);
+    const projectId = String(unit.projectId || '').trim();
+    const fallbackImage = heroMap.get(projectId) || '';
+    const card = createOfferCard(unit, rates, fallbackImage);
     offersGrid.appendChild(card);
   });
   
@@ -156,7 +176,7 @@ function updateOfferingContainer(container, budgetInfo, offers, rates) {
 /**
  * Create offer card
  */
-function createOfferCard(unit, rates) {
+function createOfferCard(unit, rates, fallbackImage = '') {
   const t = window.i18n.t.bind(window.i18n);
   
   const card = document.createElement('div');
@@ -178,9 +198,12 @@ function createOfferCard(unit, rates) {
     roiText = `${(unit.unitCashOnCashROI * 100).toFixed(1)}%`;
   }
   
+  const unitKey = String(unit.compositeId || `${unit.projectId || ''}_${unit.id || unit.unitNumber || ''}`);
+  offerUnitRegistry.set(unitKey, unit);
+
   card.innerHTML = `
-    ${unit.unitFloorplanLink && unit.unitFloorplanLink !== '-' ? `
-      <div class="offer-image" style="background-image: url('${unit.unitFloorplanLink}');"></div>
+    ${(unit.unitFloorplanLink && unit.unitFloorplanLink !== '-') || fallbackImage ? `
+      <div class="offer-image" style="background-image: url('${(unit.unitFloorplanLink && unit.unitFloorplanLink !== '-' ? unit.unitFloorplanLink : fallbackImage)}');"></div>
     ` : `
       <div class="offer-image offer-image-placeholder">
         <svg width="64" height="64" viewBox="0 0 24 24" fill="currentColor" style="opacity: 0.3;">
@@ -228,8 +251,8 @@ function createOfferCard(unit, rates) {
         <span class="price-aed">${Math.round(unit.unitPriceAed).toLocaleString()} AED</span>
       </div>
       
-      <button class="btn btn-primary btn-offer" onclick="window.openUnitDetails('${unit.projectId}', '${unit.id}')">
-        ${t('offering.learnMore')}
+      <button class="btn btn-primary btn-offer" onclick="window.openUnitDetails('${encodeURIComponent(unitKey)}')">
+        ${t('offering.tapToView')}
       </button>
     </div>
   `;
@@ -250,7 +273,142 @@ function formatCurrency(amount) {
 /**
  * Open unit details (placeholder)
  */
-window.openUnitDetails = function(projectId, unitId) {
-  const t = window.i18n.t.bind(window.i18n);
-  alert(`${t('message.comingSoon')}\n\n${t('message.projectLabel')}: ${projectId}\n${t('message.unitLabel')}: ${unitId}`);
+window.openUnitDetails = function(encodedKey) {
+  openUnitDetailsModal(encodedKey);
 };
+
+function localizedField(value, lang = (window.i18n?.getCurrentLanguage?.() || 'ru')) {
+  if (value == null) return '-';
+  if (typeof value === 'number' || typeof value === 'string') return String(value);
+  if (typeof value !== 'object') return '-';
+  if ('value' in value) return localizedField(value.value, lang);
+  if (value[lang] != null) return String(value[lang]);
+  if (value.en != null) return String(value.en);
+  if (value.ru != null) return String(value.ru);
+  return '-';
+}
+
+function renderEconomicsBlock(projectMain) {
+  const lang = window.i18n?.getCurrentLanguage?.() || 'ru';
+  const economics = projectMain?.economics || null;
+  if (!economics || typeof economics !== 'object') {
+    return '';
+  }
+
+  const entry = economics.entryTicketAED?.value ?? economics.entryTicketAED;
+  const irrValue = localizedField(economics.irrRange, lang);
+  const irrText = /%/.test(irrValue) ? irrValue : `${irrValue}%`;
+  return `
+    <div class="unit-economics">
+      <h4>${t('section.economics') || 'Economics'}</h4>
+      <div class="unit-detail-grid">
+        <div><span>Asset Class</span><b>${localizedField(economics.assetClass, lang)}</b></div>
+        <div><span>Risk</span><b>${localizedField(economics.riskProfile, lang)}</b></div>
+        <div><span>Horizon</span><b>${localizedField(economics.horizon, lang)}</b></div>
+        <div><span>Strategy</span><b>${localizedField(economics.strategy, lang)}</b></div>
+        <div><span>IRR</span><b>${irrText}</b></div>
+        <div><span>Entry</span><b>${formatCurrency(Number(entry) || 0)} AED</b></div>
+      </div>
+    </div>
+  `;
+}
+
+function firstMediaFromProjectMain(projectMain) {
+  if (!projectMain || typeof projectMain !== 'object') return '';
+  const normalizeMediaCandidate = (value) => {
+    if (!value) return '';
+    if (typeof value === 'string') {
+      const v = value.trim();
+      if (!v || v === '-') return '';
+      return v;
+    }
+    if (typeof value === 'object') {
+      const nestedCandidates = [
+        value.hyperlink,
+        value.text,
+        value.url,
+        value.src,
+        value.en,
+        value.ru
+      ];
+      for (const nested of nestedCandidates) {
+        const normalized = normalizeMediaCandidate(nested);
+        if (normalized) return normalized;
+      }
+    }
+    return '';
+  };
+
+  const candidates = [
+    projectMain.projectIntroImgLink,
+    projectMain.heroImage,
+    projectMain.image,
+    projectMain.coverImage,
+    projectMain.thumbnail,
+    projectMain.projectIntroImg
+  ];
+  for (const item of candidates) {
+    const media = normalizeMediaCandidate(item);
+    if (media) return media;
+  }
+  return '';
+}
+
+function ensureDetailsModal() {
+  if (detailsModalEl) return detailsModalEl;
+  detailsModalEl = document.createElement('div');
+  detailsModalEl.className = 'unit-details-modal hidden';
+  detailsModalEl.innerHTML = `
+    <div class="unit-details-backdrop" data-close-unit-details="1"></div>
+    <div class="unit-details-dialog">
+      <button class="unit-details-close" type="button" data-close-unit-details="1">×</button>
+      <div class="unit-details-body" id="unitDetailsBody"></div>
+    </div>
+  `;
+  document.body.appendChild(detailsModalEl);
+
+  detailsModalEl.addEventListener('click', (event) => {
+    if (event.target.closest('[data-close-unit-details="1"]')) {
+      detailsModalEl.classList.add('hidden');
+    }
+  });
+
+  return detailsModalEl;
+}
+
+async function openUnitDetailsModal(encodedKey) {
+  const t = window.i18n.t.bind(window.i18n);
+  const key = decodeURIComponent(String(encodedKey || ''));
+  const unit = offerUnitRegistry.get(key);
+  if (!unit) return;
+
+  const modal = ensureDetailsModal();
+  const body = modal.querySelector('#unitDetailsBody');
+  if (!body) return;
+  body.innerHTML = `<div class="unit-details-loading">${t('offering.loading')}</div>`;
+  modal.classList.remove('hidden');
+
+  const projectMain = await fetchProjectMain(unit.projectId);
+  const fallbackImage = firstMediaFromProjectMain(projectMain);
+  const image = unit.unitFloorplanLink && unit.unitFloorplanLink !== '-' ? unit.unitFloorplanLink : fallbackImage;
+  const priceAed = Number(unit.unitPriceAed) || 0;
+
+  body.innerHTML = `
+    <div class="unit-details-header">
+      <h3>${unit.projectName || '-'}</h3>
+      <p>${unit.projectId || '-'} | ${unit.unitNumber || unit.id || '-'}</p>
+    </div>
+    ${image ? `<div class="unit-details-image" style="background-image:url('${image}')"></div>` : ''}
+    <div class="unit-detail-grid">
+      <div><span>Status</span><b>${unit.status || '-'}</b></div>
+      <div><span>Bedrooms</span><b>${unit.unitBedrooms || '-'}</b></div>
+      <div><span>Type</span><b>${unit.unitType || '-'}</b></div>
+      <div><span>View</span><b>${unit.unitView || '-'}</b></div>
+      <div><span>Area (sqft)</span><b>${unit.unitAreaTotalSqFt || '-'}</b></div>
+      <div><span>Price (AED)</span><b>${formatCurrency(priceAed)} AED</b></div>
+      <div><span>Handover</span><b>${unit.unitHandoverDate || '-'}</b></div>
+      <div><span>Building</span><b>${unit.buildingCode || '-'}</b></div>
+    </div>
+    ${renderEconomicsBlock(projectMain)}
+  `;
+}

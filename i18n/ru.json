@@ -144,6 +144,7 @@
   "report.liabilities": "📉 Пассивы",
   "report.analysis": "📈 Анализ",
   "report.clickToEdit": "Нажмите для редактирования",
+  "report.tapToView": "Нажмите для просмотра",
   "report.total": "итого",
   "report.subtotal": "подытог",
 
@@ -265,6 +266,7 @@
   "offering.budget.cashFlow": "Денежный поток (3 года)",
   "offering.budget.liquidAssets": "Ликвидные активы (80%)",
   "offering.learnMore": "Узнать больше",
+  "offering.tapToView": "Нажмите для просмотра",
   "offering.price": "Цена",
   "offering.roi": "Доходность",
 

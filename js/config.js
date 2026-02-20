@@ -16,4 +16,4 @@ export const FIREBASE_CONFIG = {
 export const API_URL = 'https://bot-production-4fe8.up.railway.app';
 
 // Canonical preferences sync endpoint (shared across apps)
-export const PREFERENCES_API_URL = 'https://invest.hayatibank.ru/api/preferences';
+export const PREFERENCES_API_URL = 'https://api.hayatibank.ru/api/preferences';
